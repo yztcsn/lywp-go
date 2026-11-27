@@ -1,4 +1,4 @@
-# LYWP · Go 版网盘
+# LYWP · Go 版网盘（纯go版高性能网盘）
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
 [![Go](https://img.shields.io/badge/Go-1.22%2B-00ADD8.svg)](https://go.dev/)
