@@ -1,0 +1,11 @@
+# Shell scripts must keep LF line endings so they run correctly on Debian.
+*.sh text eol=lf
+*.go text eol=lf
+go.mod text eol=lf
+go.sum text eol=lf
+*.md text eol=lf
+LICENSE text eol=lf
+
+# Prebuilt binaries and archives are stored byte-for-byte.
+*.tar.gz binary
+bin/* binary

@@ -1,0 +1,13 @@
+# Local build artifacts
+lywp-server
+lywp-server.exe
+lywp-go.exe
+*.exe
+
+# Runtime data (never commit user files or secrets)
+config.json
+*.db
+*.db-shm
+*.db-wal
+/tmp/
+/files/
