@@ -13,6 +13,21 @@ Ideal for quickly setting up a private file hub on a single Debian 12 machine fo
 
 ---
 
+## Clients
+
+This repository ships three editions that share the same server data:
+
+| Platform | Directory | Description |
+| --- | --- | --- |
+| 🐧 Debian / Linux | Repository root | Pure Go server, one-command `install.sh`, amd64 / arm64 |
+| 🪟 Windows 10 / 11 (64-bit) | [`WindowsClient/`](WindowsClient/) | Pure Go port, CLI install + tray mode (no console window), no admin rights needed |
+| 🤖 Android 5.0+ | [`AndroidClient/`](AndroidClient/) | Native Java + WebView client, phone/tablet aware, 30-day remembered login |
+
+- **Windows**: grab the programs in `WindowsClient/bin/`, run `install.bat`, then `start-tray.bat` for background mode; see [WindowsClient/README.md](WindowsClient/README.md).
+- **Android**: install `AndroidClient/apk/lywp-android-release.apk` and enter your server URL and password; see [AndroidClient/README.md](AndroidClient/README.md).
+
+---
+
 ## Screenshots
 
 | Main UI (file list) | Share management |

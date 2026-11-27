@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">老杨网盘</string>
+    <string name="hint_server">服务器地址，例如 http://192.168.1.5:8080</string>
+    <string name="hint_password">访问密码</string>
+    <string name="btn_connect">连接并登录</string>
+    <string name="connecting">正在连接…</string>
+    <string name="remember_login">记住登录信息 30 天</string>
+    <string name="auto_login">正在自动登录…</string>
+    <string name="login_expired">登录信息已过期，请重新输入密码</string>
+    <string name="err_server_required">请输入服务器地址</string>
+    <string name="err_password_required">请输入访问密码</string>
+    <string name="err_server_prefix">服务器地址需以 http:// 或 https:// 开头</string>
+    <string name="err_login_failed">登录失败，请检查密码或服务器地址</string>
+    <string name="err_network">网络错误，无法连接服务器</string>
+    <string name="saved_servers">已保存的服务器</string>
+    <string name="btn_skin">皮肤</string>
+    <string name="btn_settings">设置</string>
+    <string name="btn_refresh">刷新</string>
+    <string name="btn_back">返回</string>
+    <string name="btn_logout">退出登录</string>
+    <string name="device_phone">手机</string>
+    <string name="device_tablet">平板</string>
+    <string name="skin_title">选择皮肤</string>
+    <string name="skin_saved">已保存，全站同步生效</string>
+    <string name="skin_save_failed">保存失败，仅本机临时生效</string>
+    <string name="download_started">已开始下载</string>
+    <string name="choose_file">选择文件</string>
+    <string name="about_title">关于</string>
+    <string name="about_text">老杨网盘 Android 客户端\n版本 1.0\n与 Go 版服务端配套使用</string>
+</resources>

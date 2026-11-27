@@ -1,0 +1,3933 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>老杨网盘</title>
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --primary:#7aa2ff;--primary-hover:#9db9ff;--primary-light:#1c2b4a;--success:#34d399;
+            --danger:#fb7185;--warning:#fbbf24;--info:#38bdf8;--bg:#0b1220;
+            --bg-card:rgba(18,26,42,.58);--bg-hover:rgba(40,52,76,.72);--text:#e8eefc;--text-secondary:#a0aec8;
+            --text-light:#74839e;--border:rgba(255,255,255,.12);--border-light:rgba(255,255,255,.06);--shadow:0 2px 10px rgba(0,0,0,.28);
+            --shadow-md:0 8px 26px rgba(0,0,0,.36);--shadow-lg:0 18px 46px rgba(0,0,0,.48);--radius:16px;--radius-sm:11px;
+            --radius-xs:8px;--transition:all .2s ease;
+        }
+        body{font-family:'Inter','Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;overflow-x:hidden}
+
+        /* ===== Login Screen ===== */
+        .login-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#5578e8 0%,#8f7de8 100%);z-index:9999;transition:opacity .15s,visibility .15s}
+        .login-screen.hidden{opacity:0;visibility:hidden;pointer-events:none}
+        .login-box{background:var(--bg-card);border-radius:20px;padding:48px 40px;width:400px;max-width:90vw;box-shadow:0 25px 50px rgba(0,0,0,.15);text-align:center}
+        .login-logo{width:72px;height:72px;background:linear-gradient(135deg,#5578e8,#8f7de8);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:32px;color:#fff;font-weight:700}
+        .login-box h1{font-size:24px;font-weight:700;margin-bottom:8px;color:var(--text)}
+        .login-box p{color:var(--text-secondary);font-size:14px;margin-bottom:32px}
+        .login-input{width:100%;padding:14px 18px;border:2px solid var(--border);border-radius:var(--radius);font-size:15px;transition:var(--transition);outline:none;font-family:inherit}
+        .login-input:focus{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-light)}
+        .login-btn{width:100%;padding:14px;background:linear-gradient(135deg,#5578e8,#8f7de8);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;transition:var(--transition);margin-top:16px;font-family:inherit}
+        .login-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(122,162,255,.4)}
+        .login-error{color:var(--danger);font-size:13px;margin-top:12px;min-height:20px}
+
+        /* ===== Main Layout ===== */
+        .app{display:none;height:100vh;flex-direction:column}
+        .app.active{display:flex}
+
+        /* Header */
+        .header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:0 26px;height:60px;display:flex;align-items:center;gap:16px;flex-shrink:0;z-index:100}
+        .header-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;color:var(--text);text-decoration:none;min-width:0}
+        .header-logo .icon{flex:0 0 36px;width:36px;height:36px;aspect-ratio:1/1;background:linear-gradient(135deg,#5578e8,#8f7de8);border-radius:10px;overflow:hidden;line-height:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700}
+        .header-logo .icon img{display:block;flex:none;width:100%;height:100%;object-fit:cover;object-position:center;border-radius:inherit}
+        .header-logo span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .search-box{flex:1;max-width:480px;margin:0 auto;position:relative}
+        .search-box input{width:100%;padding:10px 16px 10px 42px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;transition:var(--transition);outline:none;background:var(--bg);font-family:inherit}
+        .search-box input:focus{border-color:var(--primary);background:var(--bg-card);box-shadow:0 0 0 3px var(--primary-light)}
+        .search-box svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-light);pointer-events:none}
+        .header-actions{display:flex;align-items:center;gap:8px}
+
+        /* Toolbar */
+        .toolbar{background:var(--bg-card);border-bottom:1px solid var(--border-light);padding:10px 26px;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+
+        /* Buttons */
+        .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-card);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:var(--transition);white-space:nowrap;font-family:inherit}
+        .btn:hover{background:var(--bg-hover);border-color:#d1d5db}
+        .btn:disabled{opacity:.4;cursor:not-allowed}
+        .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+        .btn-primary:hover{background:var(--primary-hover)}
+        .btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+        .btn-danger:hover{background:#dc2626}
+        .btn svg{width:16px;height:16px;flex-shrink:0}
+        .btn-sm{padding:6px 12px;font-size:12px}
+        .btn-icon{padding:8px;width:36px;height:36px;justify-content:center}
+
+        /* Breadcrumb */
+        .breadcrumb{display:flex;align-items:center;gap:2px;font-size:13px;color:var(--text-secondary);flex-wrap:wrap}
+        .breadcrumb a{color:var(--text-secondary);text-decoration:none;padding:4px 6px;border-radius:var(--radius-xs);transition:var(--transition)}
+        .breadcrumb a:hover{background:var(--bg-hover);color:var(--primary)}
+        .breadcrumb span{color:var(--text);font-weight:500;padding:4px 6px}
+        .breadcrumb .sep{color:var(--text-light);padding:0}
+
+        /* File List */
+        .file-area{flex:1;overflow:auto;padding:16px}
+        .file-list{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border-light)}
+        .file-header{display:grid;grid-template-columns:40px 1fr 120px 160px 160px;padding:12px 16px;font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border-light);background:var(--bg-hover)}
+        .file-header .file-check{display:flex;align-items:center;justify-content:flex-start}
+        .file-header .col-actions{display:flex;align-items:center;justify-content:flex-start}
+        .selection-bar{background:var(--primary);color:#fff;padding:8px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0;font-size:13px;font-weight:500;animation:slideDown .2s ease;flex-wrap:wrap}
+        .selection-bar.hidden{display:none}
+        .selection-bar .sel-info{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
+        .selection-bar .sel-actions{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+        .selection-bar .sel-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid rgba(255,255,255,.4);border-radius:var(--radius-xs);background:rgba(255,255,255,.15);color:#fff;font-size:12px;font-weight:500;cursor:pointer;transition:var(--transition);white-space:nowrap;font-family:inherit}
+        .selection-bar .sel-btn:hover{background:rgba(255,255,255,.3);border-color:rgba(255,255,255,.6)}
+        .selection-bar .sel-btn svg{width:14px;height:14px}
+        .selection-bar .sel-btn.danger{border-color:rgba(239,68,68,.5);background:rgba(239,68,68,.3)}
+        .selection-bar .sel-btn.danger:hover{background:rgba(239,68,68,.5)}
+        @keyframes slideDown{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pulse{0%{background:#dbeafe}50%{background:#bfdbfe}100%{background:#dbeafe}}
+        .file-row{display:grid;grid-template-columns:40px 1fr 120px 160px 160px;padding:10px 16px;align-items:center;border-bottom:1px solid var(--border-light);cursor:pointer;transition:var(--transition);font-size:14px}
+        .file-row:hover{background:var(--bg-hover)}
+        .file-row.highlight{background:#dbeafe !important;animation:pulse 2s}
+        .file-row.selected{background:var(--primary-light)}
+        .file-row:last-child{border-bottom:none}
+        .file-row .file-icon{display:flex;align-items:center;justify-content:center}
+        .file-row .file-name{display:flex;align-items:center;gap:10px;font-weight:500;overflow:hidden}
+        .file-row .file-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .file-row .file-size{color:var(--text-secondary);font-size:13px}
+        .file-row .file-size .file-count{color:#ef4444;font-size:12px}
+        .file-row .file-date{color:var(--text-secondary);font-size:13px}
+        .file-row .file-check{display:flex;align-items:center;justify-content:flex-start}
+        .file-row .file-actions{display:flex;gap:2px;justify-content:flex-start}
+        .file-row .file-actions button{padding:6px;border:none;background:none;cursor:pointer;border-radius:var(--radius-xs);color:var(--text-secondary);transition:var(--transition);display:flex;align-items:center;justify-content:center}
+        .file-row .file-actions button:hover{background:var(--primary-light);color:var(--primary)}
+
+        /* Checkbox */
+        .checkbox{width:18px;height:18px;border:2px solid var(--border);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition);flex-shrink:0}
+        .checkbox:hover{border-color:var(--primary)}
+        .checkbox.checked{background:var(--primary);border-color:var(--primary)}
+        .checkbox.checked svg{color:#fff}
+        .checkbox svg{width:12px;height:12px}
+
+        /* Select All */
+        .select-all{width:18px;height:18px;border:2px solid var(--border);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+        .select-all:hover{border-color:var(--primary)}
+        .select-all.checked{background:var(--primary);border-color:var(--primary)}
+        .select-all.partial{background:var(--primary);border-color:var(--primary)}
+
+        /* File Icons */
+        .folder-icon{color:#f59e0b}
+        .file-icon-default{color:#6b7280}
+        .file-icon-image{color:#ec4899}
+        .file-icon-video{color:#8b5cf6}
+        .file-icon-audio{color:#06b6d4}
+        .file-icon-pdf{color:#ef4444}
+        .file-icon-doc{color:#3b82f6}
+        .file-icon-zip{color:#f97316}
+        .file-icon-code{color:#10b981}
+
+        /* Context Menu */
+        .context-menu{position:fixed;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);padding:6px;z-index:1000;min-width:180px;display:none}
+        .context-menu.show{display:block}
+        .context-menu-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius-xs);cursor:pointer;font-size:13px;color:var(--text);transition:var(--transition)}
+        .context-menu-item:hover{background:var(--bg-hover)}
+        .context-menu-item.danger{color:var(--danger)}
+        .context-menu-item svg{width:16px;height:16px;color:var(--text-secondary)}
+        .context-menu-item.danger svg{color:var(--danger)}
+        .context-menu-divider{height:1px;background:var(--border);margin:4px 8px}
+
+        /* Modals */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:2000;opacity:0;pointer-events:none;transition:opacity .25s}
+        .modal-overlay.show{opacity:1;pointer-events:auto}
+        .modal{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:460px;max-width:90vw;max-height:85vh;overflow:hidden;transform:translateY(10px);transition:transform .25s;display:flex;flex-direction:column}
+        .modal-overlay.show .modal{transform:translateY(0)}
+        .modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border-light);flex-shrink:0}
+        .modal-header h3{font-size:16px;font-weight:600}
+        .modal-close{width:32px;height:32px;border:none;background:none;cursor:pointer;border-radius:var(--radius-xs);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:var(--transition)}
+        .modal-close:hover{background:var(--bg-hover);color:var(--text)}
+        .modal-body{padding:24px;overflow-y:auto;flex-shrink:1;min-height:0}
+        .modal-footer{display:flex;justify-content:flex-end;gap:8px;padding:16px 24px;border-top:1px solid var(--border-light);flex-shrink:0}
+
+        /* Form */
+        .form-group{margin-bottom:16px}
+        .form-label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text)}
+        .form-input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;outline:none;transition:var(--transition);font-family:inherit}
+        .form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+        .form-select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;outline:none;transition:var(--transition);font-family:inherit;background:var(--bg-card);cursor:pointer}
+        .form-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
+
+        /* Upload Area */
+        .upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:40px;text-align:center;cursor:pointer;transition:var(--transition);background:var(--bg)}
+        .upload-zone:hover,.upload-zone.dragover{border-color:var(--primary);background:var(--primary-light)}
+        .upload-zone svg{width:48px;height:48px;color:var(--text-light);margin-bottom:12px}
+        .upload-zone h4{font-size:16px;font-weight:600;margin-bottom:4px}
+        .upload-zone p{color:var(--text-secondary);font-size:13px}
+
+        /* Upload Progress */
+        .upload-list{margin-top:16px;max-height:300px;overflow-y:auto}
+        .upload-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:8px}
+        .upload-item .info{flex:1;min-width:0}
+        .upload-item .info .name{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .upload-item .info .meta{font-size:12px;color:var(--text-secondary)}
+        .upload-item .progress-bar{width:100%;height:4px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden}
+        .upload-item .progress-bar .fill{height:100%;background:var(--primary);border-radius:2px;transition:width .3s}
+        .upload-item .status{font-size:12px;font-weight:500;white-space:nowrap}
+        .upload-item .status.success{color:var(--success)}
+        .upload-item .status.error{color:var(--danger)}
+
+        /* Upload Modal - flex layout: upload-list fills remaining space, footer always visible */
+        #uploadModal .modal-body{display:flex;flex-direction:column;overflow:hidden}
+        #uploadModal .upload-zone{flex-shrink:0}
+        #uploadModal .upload-folder-btn{flex-shrink:0}
+        #uploadModal .upload-list{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto}
+
+        /* Share List */
+        .share-item{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--border-light)}
+        .share-item:last-child{border-bottom:none}
+        .share-item .share-info{flex:1;min-width:0}
+        .share-item .share-name{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .share-item .share-url{font-size:12px;color:var(--primary);word-break:break-all;margin-top:2px;cursor:pointer}
+        .share-item .share-url:hover{text-decoration:underline}
+        .share-item .share-meta{font-size:12px;color:var(--text-secondary);margin-top:2px}
+        .share-item .share-expired{color:var(--danger);font-weight:500}
+        .share-item .share-copy{padding:6px 12px;font-size:12px}
+        .share-load-more{text-align:center;padding:16px 0;color:var(--text-secondary);font-size:13px}
+        .share-load-more .spinner{display:inline-block}
+        .share-count-bar{font-size:12px;color:var(--text-light);padding:0 0 8px;border-bottom:1px solid var(--border-light);margin-bottom:4px}
+
+        /* Status Bar */
+        .statusbar{background:var(--bg-card);border-top:1px solid var(--border-light);padding:6px 24px;font-size:12px;color:var(--text-secondary);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+
+        /* Toast */
+        .toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+        .toast{padding:12px 20px;border-radius:var(--radius-sm);color:#fff;font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);animation:slideIn .3s ease;min-width:200px;display:flex;align-items:center;gap:8px}
+        .toast.success{background:var(--success)}
+        .toast.error{background:var(--danger)}
+        .toast.info{background:var(--info)}
+        @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+        /* Empty State */
+        .empty-state{text-align:center;padding:60px 20px;color:var(--text-secondary)}
+        .empty-state svg{width:64px;height:64px;color:var(--text-light);margin-bottom:16px}
+        .empty-state h3{font-size:16px;font-weight:600;margin-bottom:4px;color:var(--text)}
+        .empty-state p{font-size:13px}
+
+        /* Download Progress */
+        .dl-progress{position:fixed;bottom:24px;right:24px;z-index:9000;background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:16px 20px;min-width:260px;max-width:360px;display:none}
+        .dl-progress.show{display:block;animation:slideIn .3s ease}
+        .dl-progress .dl-title{font-size:13px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+        .dl-progress .dl-bar{width:100%;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+        .dl-progress .dl-bar .fill{height:100%;background:var(--primary);border-radius:3px;transition:width .3s}
+        .dl-progress .dl-info{font-size:12px;color:var(--text-secondary);margin-top:6px}
+
+        /* Batch Download Progress Panel */
+        .dl-batch-panel{position:fixed;bottom:24px;right:24px;z-index:9001;background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:380px;max-width:92vw;max-height:60vh;display:none;flex-direction:column;overflow:hidden}
+        .dl-batch-panel.show{display:flex;animation:slideIn .3s ease}
+        .dl-batch-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border-light);flex-shrink:0}
+        .dl-batch-header .dl-batch-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+        .dl-batch-header .dl-batch-close{width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:16px;transition:var(--transition)}
+        .dl-batch-header .dl-batch-close:hover{background:var(--bg-hover);color:var(--text)}
+        .dl-batch-overall{padding:12px 18px;border-bottom:1px solid var(--border-light);flex-shrink:0}
+        .dl-batch-overall .dl-batch-summary{font-size:12px;color:var(--text-secondary);margin-bottom:6px;display:flex;justify-content:space-between}
+        .dl-batch-overall .dl-batch-bar{width:100%;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+        .dl-batch-overall .dl-batch-bar .fill{height:100%;background:var(--success);border-radius:3px;transition:width .2s}
+        .dl-batch-list{flex:1;overflow-y:auto;padding:4px 0}
+        .dl-batch-item{display:flex;align-items:center;gap:10px;padding:8px 18px;font-size:12px;border-bottom:1px solid var(--border-light)}
+        .dl-batch-item:last-child{border-bottom:none}
+        .dl-batch-item .dl-batch-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);min-width:0}
+        .dl-batch-item .dl-batch-status{flex-shrink:0;font-size:11px;font-weight:500;min-width:44px;text-align:right}
+        .dl-batch-item .dl-batch-status.pending{color:var(--text-light)}
+        .dl-batch-item .dl-batch-status.downloading{color:var(--primary)}
+        .dl-batch-item .dl-batch-status.done{color:var(--success)}
+        .dl-batch-item .dl-batch-status.error{color:var(--danger)}
+        .dl-batch-item .dl-batch-bar-wrap{width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0}
+        .dl-batch-item .dl-batch-bar-wrap .fill{height:100%;background:var(--primary);border-radius:2px;transition:width .2s}
+        .dl-batch-cancel{padding:10px 18px;border-top:1px solid var(--border-light);flex-shrink:0;text-align:center}
+        .dl-batch-cancel button{padding:6px 24px;border:1px solid var(--danger);background:var(--bg-card);color:var(--danger);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit;transition:var(--transition)}
+        .dl-batch-cancel button:hover{background:var(--danger);color:#fff}
+
+        /* Loading */
+        .loading{display:flex;align-items:center;justify-content:center;padding:60px}
+        #fileBody.is-loading{opacity:.55}
+        .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* Responsive */
+        @media(max-width:768px){
+            .file-header,.file-row{grid-template-columns:36px 1fr 90px 140px 130px}
+            .file-header .col-date,.file-row .file-date{display:none}
+            .header{padding:0 14px}
+            .toolbar{padding:8px 14px}
+            .selection-bar{padding:8px 14px}
+            .file-area{padding:10px}
+            .search-box{max-width:none}
+            .header-actions .btn span{display:none}
+        }
+        @media(max-width:540px){
+            .file-header,.file-row{grid-template-columns:32px 1fr}
+            .file-row{align-items:flex-start;padding:10px 12px}
+            .file-row .file-check{padding-top:2px}
+            .file-row .file-name{align-items:flex-start}
+            .file-row .file-name span{white-space:normal;word-break:break-all;overflow:visible;text-overflow:unset}
+            .file-header .col-size,.file-row .file-size,.file-header .col-date,.file-row .file-date,.file-header .col-actions,.file-row .file-actions{display:none}
+            .toolbar .btn span,.selection-bar .sel-btn span{display:none}
+            .selection-bar .sel-info{flex-wrap:wrap;gap:4px}
+            .header{padding:6px 10px;gap:8px;height:auto;min-height:56px;flex-wrap:wrap}
+            .header-logo{gap:8px;font-size:15px;max-width:none;flex:1 1 auto}
+            .header-logo .icon{flex-basis:30px;width:30px;height:30px;border-radius:8px}
+            .header-logo span{font-size:15px}
+            .header-actions{gap:5px;flex:0 0 auto}
+            .search-box{order:3;flex:1 0 100%;max-width:none;margin:0}
+            .search-box input{padding-top:8px;padding-bottom:8px}
+            .toolbar{padding:8px 10px}
+            .file-area{padding:8px}
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar{width:6px;height:6px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+        ::-webkit-scrollbar-thumb:hover{background:var(--text-light)}
+
+        /* ===== Preview Modal ===== */
+        .preview-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3000;opacity:0;pointer-events:none;transition:opacity .25s}
+        .preview-overlay.show{opacity:1;pointer-events:auto}
+        .preview-header{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:linear-gradient(to bottom,rgba(0,0,0,.6),transparent);z-index:1}
+        .preview-header .preview-title{color:#fff;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100vw - 160px)}
+        .preview-header-btns{display:flex;align-items:center;gap:8px;flex-shrink:0}
+        .preview-header-btns button{width:36px;height:36px;border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;backdrop-filter:blur(4px)}
+        .preview-header-btns button:hover{background:rgba(255,255,255,.3)}
+        .preview-header-btns button svg{width:18px;height:18px}
+        .preview-body{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:60px 16px 16px;overflow:hidden}
+        /* 图片预览 */
+        .preview-body img.preview-img{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px;box-shadow:0 8px 32px rgba(0,0,0,.4);user-select:none;transition:transform .2s}
+        /* 视频预览 */
+        .preview-body video.preview-video{max-width:100%;max-height:100%;border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,.4);outline:none}
+        /* 文本预览 */
+        .preview-text-wrap{background:#1e1e2e;border-radius:8px;width:100%;max-width:900px;max-height:100%;overflow:auto;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+        .preview-text-wrap pre{padding:24px;margin:0;font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:13px;line-height:1.7;color:#cdd6f4;white-space:pre-wrap;word-break:break-all;tab-size:4}
+        /* 加载/错误占位 */
+        .preview-loading{color:rgba(255,255,255,.6);font-size:14px;display:flex;flex-direction:column;align-items:center;gap:16px}
+        .preview-loading .spinner{border-color:rgba(255,255,255,.2);border-top-color:#fff}
+        .preview-error{color:rgba(255,255,255,.7);font-size:14px;text-align:center}
+        .preview-error svg{width:48px;height:48px;color:rgba(255,255,255,.3);margin-bottom:12px}
+        /* 图片缩放工具栏 */
+        .preview-toolbar{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border-radius:20px;padding:6px 12px}
+        .preview-toolbar button{width:32px;height:32px;border:none;background:rgba(255,255,255,.12);color:#fff;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;font-size:12px;font-weight:600}
+        .preview-toolbar button:hover{background:rgba(255,255,255,.25)}
+        .preview-toolbar .zoom-label{color:rgba(255,255,255,.7);font-size:12px;min-width:44px;text-align:center}
+        .preview-toolbar.hidden{display:none}
+        @media(max-width:540px){
+            .preview-body{padding:54px 8px 8px}
+            .preview-text-wrap pre{font-size:12px;padding:16px}
+            .preview-header .preview-title{font-size:13px}
+        }
+
+        /* Move Grid */
+        .move-grid{display:flex;flex-wrap:wrap;gap:12px;max-height:350px;overflow-y:auto;padding:8px}
+        .move-folder{width:90px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);border:2px solid transparent}
+        .move-folder:hover{background:var(--bg-hover)}
+        .move-folder.active{border-color:var(--primary);background:var(--primary-light)}
+        .move-folder svg{width:48px;height:48px;flex-shrink:0}
+        .move-folder span{max-width:100%;text-align:center;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .move-path{font-size:12px;color:var(--text-light);padding:8px;border-top:1px solid var(--border);margin-top:4px}
+        .move-path span{color:var(--primary);font-weight:500}
+
+        /* ---- Theme: dark surface overrides (variable driven) ---- */
+        .header,.toolbar,.file-list,.file-header,.statusbar,.context-menu,.modal,.login-box,.pw-box{
+            background:var(--bg-card)!important;color:var(--text)!important;
+        }
+        .file-header{background:var(--bg-card)!important}
+        .file-row:hover{background:var(--bg-hover)!important}
+        .btn{background:var(--bg-card)!important;color:var(--text)!important;border-color:var(--border)!important}
+        .btn-primary{background:var(--primary)!important;color:#fff!important;border-color:var(--primary)!important}
+        .btn-danger{background:var(--danger)!important;color:#fff!important;border-color:var(--danger)!important}
+        .btn:hover{background:var(--bg-hover)!important}
+        .search-box input,.form-input,.form-select,.login-input,.pw-input{background:var(--bg)!important;color:var(--text)!important;border-color:var(--border)!important}
+        .search-box input:focus,.login-input:focus,.pw-input:focus{background:var(--bg)!important}
+        .file-row.selected{background:var(--primary-light)!important}
+        .dl-progress,.dl-batch-panel{background:var(--bg-card)!important;color:var(--text)!important}
+        .selection-bar{background:var(--primary)!important}
+        .upload-zone,.upload-item{background:var(--bg-card)!important}
+
+        /* ---- Theme: dark minimal glass surfaces ---- */
+        @keyframes mgDrift{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(3%,-2%,0) scale(1.08)}100%{transform:translate3d(0,0,0) scale(1)}}
+        @keyframes mgRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+        /* soft color orbs glowing behind the dark frosted panels */
+        body::before{
+            content:"";position:fixed;inset:-24%;z-index:0;pointer-events:none;
+            background:
+                radial-gradient(38% 40% at 16% 20%,rgba(91,124,250,.30),transparent 70%),
+                radial-gradient(34% 36% at 84% 26%,rgba(139,92,246,.22),transparent 70%),
+                radial-gradient(40% 42% at 62% 86%,rgba(56,189,248,.18),transparent 70%);
+            filter:blur(34px);animation:mgDrift 26s ease-in-out infinite;
+        }
+        .app,.share-app{position:relative;z-index:1}
+
+        /* dark frosted panels: translucent fill, hairline edge, soft shadow */
+        .header,.toolbar,.file-list,.file-header,.statusbar,.context-menu,.modal,
+        .login-box,.pw-box,.upload-zone,.upload-item,.dl-batch-panel{
+            background:rgba(18,26,42,.58)!important;
+            border:1px solid rgba(255,255,255,.12);
+            backdrop-filter:blur(22px) saturate(140%);
+            -webkit-backdrop-filter:blur(22px) saturate(140%);
+            box-shadow:0 10px 34px rgba(0,0,0,.34);
+        }
+        .header,.toolbar{border-radius:0}
+        .modal{border-radius:var(--radius)}
+
+        /* rows stay airy so the glass reads as one surface */
+        .file-row{background:transparent!important;border-bottom-color:rgba(255,255,255,.07)}
+        .file-row:hover{background:rgba(255,255,255,.07)!important}
+        .file-row.selected{background:rgba(122,162,255,.16)!important}
+
+        /* inputs and secondary buttons are frosted too */
+        .search-box input,.form-input,.form-select,.login-input,.pw-input{
+            background:rgba(10,16,28,.58)!important;
+            border:1px solid rgba(255,255,255,.14)!important;
+            backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+            box-shadow:inset 0 1px 2px rgba(0,0,0,.2);
+        }
+        .btn:not(.btn-primary){
+            background:rgba(18,26,42,.65)!important;
+            border-color:rgba(255,255,255,.14)!important;
+            backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+        }
+
+        /* gates: deep-space gradient plus blurred dark card */
+        .login-screen,.pw-screen{
+            position:fixed;overflow:hidden;
+            background:radial-gradient(120% 90% at 50% -8%,#15213c 0%,#0b1220 46%,#070b14 100%)!important;
+        }
+        .login-screen::before,.pw-screen::before{
+            content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+            background:
+                radial-gradient(40% 42% at 22% 24%,rgba(91,124,250,.26),transparent 70%),
+                radial-gradient(38% 40% at 80% 76%,rgba(139,92,246,.22),transparent 70%);
+            filter:blur(26px);
+        }
+        .login-box,.pw-box{
+            position:relative;z-index:3;
+            background:rgba(18,26,42,.60)!important;
+            border:1px solid rgba(255,255,255,.14);
+            backdrop-filter:blur(28px) saturate(150%);
+            -webkit-backdrop-filter:blur(28px) saturate(150%);
+            box-shadow:0 24px 70px rgba(0,0,0,.5);
+        }
+
+        /* quiet entrance only - no decorative motion elsewhere */
+        .login-box,.pw-box,.modal-overlay.show .modal{animation:mgRise .3s ease both}
+        @media (prefers-reduced-motion:reduce){
+            body::before,.login-box,.pw-box,.modal-overlay.show .modal{animation:none!important}
+        }
+    </style>
+    <script>
+        /* The server injects data-theme into <html> from config.json, so the
+           skin is already correct before first paint on every page. */
+        window.LYWP_THEME = document.documentElement.getAttribute('data-theme') || 'ocean';
+    </script>
+    <link rel="stylesheet" href="theme.css">
+    <!-- 本地内嵌打包/二维码库：不依赖外网，页面首屏不再被 CDN 阻塞 -->
+    <script src="jszip.min.js" defer></script>
+    <!-- 本地内嵌二维码库（离线可用，分享链接不外泄） -->
+    <script src="qrcode.min.js"></script>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-screen hidden" id="loginScreen">
+    <div class="login-box">
+        <div class="login-logo"><img src="logo.jpg" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></div>
+        <h1>老杨网盘</h1>
+        <p>请输入访问密码以进入网盘</p>
+        <input type="password" class="login-input" id="loginPassword" placeholder="输入访问密码" autocomplete="off">
+        <button class="login-btn" id="loginBtn" onclick="doLogin()">进入网盘</button>
+        <div class="login-error" id="loginError"></div>
+    </div>
+</div>
+
+<!-- Main App -->
+<div class="app" id="app">
+    <!-- Header -->
+    <header class="header">
+        <a class="header-logo" href="#">
+            <div class="icon"><img src="logo.jpg" alt="logo"></div>
+            <span>老杨网盘</span>
+        </a>
+        <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="searchInput" placeholder="搜索文件和文件夹..." autocomplete="off" oninput="handleSearchInput(event)" onkeydown="handleSearchKey(event)">
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-sm" onclick="openSkinModal()" title="更换皮肤">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 0 0 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.2 0-1.1.9-2 2-2H16c3.3 0 6-2.7 6-6 0-4.4-4.5-7.5-10-7.5z"/><circle cx="7.5" cy="11.5" r="1"/><circle cx="10" cy="7.5" r="1"/><circle cx="15" cy="7.5" r="1"/><circle cx="17.5" cy="11.5" r="1"/></svg>
+                <span>皮肤</span>
+            </button>
+            <button class="btn btn-sm" onclick="showShares()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span>分享管理</span>
+            </button>
+            <button class="btn btn-sm" onclick="doLogout()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <span>退出</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1">
+            <div class="breadcrumb" id="breadcrumb"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn btn-sm" onclick="openUploadModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span>上传</span>
+            </button>
+            <button class="btn btn-sm" onclick="openNewFolderModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+                <span>新建</span>
+            </button>
+            <button class="btn btn-sm" onclick="openOfflineModal()" title="离线下载（支持链接、磁力链接）">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v14"/><polyline points="6 10 12 16 18 10"/><path d="M4 19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><circle cx="12" cy="4" r="1.5" fill="currentColor" stroke="none"/></svg>
+                <span>离线下载</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Selection Action Bar (appears when items are selected) -->
+    <div class="selection-bar hidden" id="selectionBar">
+        <div class="sel-info">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>已选择 <strong id="selCount">0</strong> 项</span>
+            <a href="javascript:void(0)" onclick="clearSelection()" style="color:rgba(255,255,255,.8);text-decoration:underline;font-size:12px">取消选择</a>
+        </div>
+        <div class="sel-actions">
+            <button class="sel-btn" onclick="batchDownload()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                下载
+            </button>
+            <button class="sel-btn" onclick="openBatchMoveModal()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l-3 3 3 3"/><path d="M9 12H2"/><path d="m15 5 3 3-3 3"/><path d="M22 8h-7"/><path d="m15 19-3-3 3-3"/><path d="M22 16h-7"/></svg>
+                移动
+            </button>
+            <button class="sel-btn danger" onclick="batchDelete()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                删除
+            </button>
+        </div>
+    </div>
+
+    <!-- File List Area -->
+    <div class="file-area" id="fileArea">
+        <div class="file-list" id="fileList">
+            <div class="file-header">
+                <div class="file-check"><div class="select-all" id="selectAll" onclick="toggleSelectAll()"></div></div>
+                <div class="col-name">名称</div>
+                <div class="col-size">大小</div>
+                <div class="col-date">修改时间</div>
+                <div class="col-actions">操作</div>
+            </div>
+            <div id="fileBody">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="statusbar">
+        <span id="statusInfo"></span>
+    </div>
+</div>
+
+<!-- Context Menu -->
+<div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" id="ctxPreview" onclick="contextAction('preview')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        预览
+    </div>
+    <div class="context-menu-item" onclick="contextAction('open')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 19a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4l2 2h4a2 2 0 0 1 2 2v1M5 19h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2Z"/></svg>
+        打开
+    </div>
+    <div class="context-menu-item" onclick="contextAction('download')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        下载
+    </div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item" onclick="contextAction('rename')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        重命名
+    </div>
+    <div class="context-menu-item" onclick="contextAction('move')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"/><span>移动到</span>
+    </div>
+    <div class="context-menu-item" onclick="contextAction('share')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        分享
+    </div>
+    <div class="context-menu-item" id="ctxDirectLink" onclick="contextAction('direct_link')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        生成直链
+    </div>
+    <div class="context-menu-item" id="ctxEncrypt" onclick="contextAction('encrypt')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        <span>加密文件夹</span>
+    </div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item danger" onclick="contextAction('delete')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        删除
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="uploadModal">
+    <div class="modal" style="width:560px;position:relative">
+        <div class="modal-header">
+            <h3>上传文件</h3>
+            <button class="modal-close" onclick="closeUploadModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <h4>拖拽文件到此处添加</h4>
+                <p>或点击选择文件，支持上传文件夹</p>
+            </div>
+            <input type="file" id="fileInput" multiple style="display:none" onchange="addToUploadQueue(this.files); this.value='';">
+            <input type="file" id="folderInput" webkitdirectory multiple style="display:none" onchange="addToUploadQueue(this.files); this.value='';">
+            <div class="upload-folder-btn" style="text-align:center;margin-top:12px">
+                <button class="btn btn-sm" onclick="document.getElementById('folderInput').click()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    选择文件夹
+                </button>
+            </div>
+            <div class="upload-list" id="uploadList"></div>
+        </div>
+        <div class="modal-footer" id="uploadFooter" style="display:none">
+            <button class="btn" onclick="clearUploadQueue()">清空列表</button>
+            <button class="btn btn-primary" id="startUploadBtn" onclick="startUpload()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                开始上传 (<span id="uploadCount">0</span> 个文件)
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Offline Download Modal -->
+<div class="modal-overlay" id="offlineModal">
+    <div class="modal" style="width:620px">
+        <div class="modal-header">
+            <h3>离线下载</h3>
+            <button class="modal-close" onclick="closeModal('offlineModal')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">下载链接</label>
+                <input type="text" class="form-input" id="offlineUrl" placeholder="http(s):// 链接、.torrent 直链、FTP 或 magnet: 磁力链接" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label class="form-label">或者使用本地 BT 种子文件</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <input type="file" id="offlineTorrentFile" accept=".torrent" style="flex:1;min-width:0;font-size:12px;color:var(--text-secondary)">
+                    <button class="btn btn-primary" id="offlineTorrentBtn" onclick="startTorrentDownload()">开始种子下载</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">保存到（当前文件夹）</label>
+                <input type="text" class="form-input" id="offlineTarget" readonly>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);cursor:pointer">
+                <input type="checkbox" id="offlineExtract"> 下载完成后自动解压压缩包（zip / tar / tar.gz）
+            </label>
+            <p style="font-size:12px;color:var(--text-secondary);margin:10px 0 0;line-height:1.6">
+                支持磁力链接、HTTP/FTP 直链，以及直接上传 <code>.torrent</code> 种子文件；BT 任务由 aria2 完成，安装时会自动准备。
+                多文件种子会保留目录结构下载到当前文件夹，压缩包可选择自动解压成文件夹。
+            </p>
+            <div style="margin-top:18px;font-size:13px;font-weight:600">任务列表</div>
+            <div id="offlineTaskList" style="margin-top:10px;max-height:260px;overflow-y:auto;font-size:13px">
+                <div style="color:var(--text-secondary)">暂无任务</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('offlineModal')">关闭</button>
+            <button class="btn btn-primary" id="offlineStartBtn" onclick="startOfflineDownload()">开始下载</button>
+        </div>
+    </div>
+</div>
+
+<!-- Skin Picker Modal -->
+<div class="modal-overlay" id="skinModal">
+    <div class="modal skin-modal">
+        <div class="modal-header">
+            <h3>更换皮肤</h3>
+            <button class="modal-close" onclick="closeModal('skinModal')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p class="skin-hint">共 22 款：5 款配色、10 款改变按钮与圆角（含多款直角）、3 款亮色、4 款毛玻璃（含直角版）。点击立即保存到服务器，全站生效——登录页、网盘、分享页以及所有访客看到的都是同一套皮肤，重启后依然保留。</p>
+            <div class="skin-section-title">配色皮肤</div>
+            <div class="skin-grid" id="skinColorGrid"></div>
+            <div class="skin-section-title">界面皮肤（按钮与圆角）</div>
+            <div class="skin-grid" id="skinUiGrid"></div>
+            <div class="skin-section-title">亮色皮肤</div>
+            <div class="skin-grid" id="skinLightGrid"></div>
+            <div class="skin-section-title">毛玻璃皮肤</div>
+            <div class="skin-grid" id="skinGlassGrid"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="applySkin('ocean')">恢复默认</button>
+            <button class="btn btn-primary" onclick="closeModal('skinModal')">完成</button>
+        </div>
+    </div>
+</div>
+
+<!-- New Folder Modal -->
+<div class="modal-overlay" id="newFolderModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>新建文件夹</h3>
+            <button class="modal-close" onclick="closeModal('newFolderModal')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">文件夹名称</label>
+                <input type="text" class="form-input" id="newFolderName" placeholder="请输入文件夹名称">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('newFolderModal')">取消</button>
+            <button class="btn btn-primary" onclick="createFolder()">创建</button>
+        </div>
+    </div>
+</div>
+
+<!-- Rename Modal -->
+<div class="modal-overlay" id="renameModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>重命名</h3>
+            <button class="modal-close" onclick="closeModal('renameModal')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">新名称</label>
+                <input type="text" class="form-input" id="renameInput" placeholder="请输入新名称" autocomplete="off">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('renameModal')">取消</button>
+            <button class="btn btn-primary" onclick="doRename()">确认</button>
+        </div>
+    </div>
+</div>
+
+<!-- Direct Link Modal -->
+<div class="modal-overlay" id="directLinkModal">
+    <div class="modal" style="width:500px">
+        <div class="modal-header">
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                生成直链
+            </h3>
+            <button class="modal-close" onclick="closeModal('directLinkModal')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">文件</label>
+                <input type="text" class="form-input" id="directLinkFileName" readonly>
+            </div>
+            <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:8px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>直链无需登录即可直接下载，请谨慎分享给他人。此直链永久有效，可在「分享管理」中删除。</span>
+            </div>
+            <div id="directLinkGenerating" style="display:none;text-align:center;padding:20px 0">
+                <div class="spinner" style="margin:0 auto 10px"></div>
+                <p style="color:var(--text-secondary);font-size:14px">正在生成直链...</p>
+            </div>
+            <div id="directLinkResult" style="display:none">
+                <div class="form-group">
+                    <label class="form-label">直链地址（无需登录可直接下载）</label>
+                    <div style="display:flex;gap:8px">
+                        <input type="text" class="form-input" id="directLinkUrl" readonly style="flex:1;font-size:12px;font-family:monospace">
+                        <button class="btn btn-sm btn-primary" onclick="copyDirectLink()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            复制
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:14px">
+                    <label class="form-label">手机扫码直接下载（自动使用当前域名）</label>
+                    <div style="display:flex;justify-content:center;padding:14px;background:var(--bg-card);border:1px solid var(--border-light);border-radius:10px">
+                        <img id="directLinkQrImg" alt="直链二维码" style="width:170px;height:170px">
+                    </div>
+                    <p style="font-size:12px;color:var(--text-secondary);text-align:center;margin-top:8px">用手机扫码即可直接开始下载</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('directLinkModal')">关闭</button>
+            <button class="btn btn-primary" id="directLinkBtn" onclick="doGenerateDirectLink()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                生成直链
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal-overlay" id="shareModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>分享文件</h3>
+            <button class="modal-close" onclick="closeModal('shareModal')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">文件</label>
+                <input type="text" class="form-input" id="shareFileName" readonly>
+            </div>
+            <div class="form-group">
+                <label class="form-label">访问密码（可选）</label>
+                <input type="text" class="form-input" id="sharePassword" placeholder="留空则无需密码">
+            </div>
+            <div class="form-group">
+                <label class="form-label">有效期</label>
+                <select class="form-select" id="shareExpire">
+                    <option value="0" selected>永久有效</option>
+                    <option value="1">1天</option>
+                    <option value="5">5天</option>
+                    <option value="7">7天</option>
+                    <option value="30">30天</option>
+                    <option value="60">60天</option>
+                    <option value="90">90天</option>
+                    <option value="180">180天</option>
+                    <option value="365">365天</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">下载次数限制（0 表示不限）</label>
+                <input type="number" class="form-input" id="shareMaxDownloads" min="0" step="1" value="0" placeholder="例如 20，超过后分享自动失效">
+            </div>
+            <div id="shareResult" style="display:none;margin-top:16px">
+                <div class="form-group">
+                    <label class="form-label">分享链接</label>
+                    <div style="display:flex;gap:8px">
+                        <input type="text" class="form-input" id="shareUrl" readonly style="flex:1">
+                        <button class="btn btn-sm" onclick="copyShareUrl()">复制</button>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:14px">
+                    <label class="form-label">手机扫码下载（自动使用当前域名）</label>
+                    <div style="display:flex;justify-content:center;padding:14px;background:var(--bg-card);border:1px solid var(--border-light);border-radius:10px">
+                        <img id="shareQrImg" alt="分享二维码" style="width:170px;height:170px">
+                    </div>
+                    <p style="font-size:12px;color:var(--text-secondary);text-align:center;margin-top:8px">用手机扫码即可在浏览器中打开并下载</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('shareModal')">取消</button>
+            <button class="btn btn-primary" id="shareBtn" onclick="doShare()">创建分享</button>
+        </div>
+    </div>
+</div>
+
+<!-- Folder Encryption Modal -->
+<div class="modal-overlay" id="encryptModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>文件夹加密</h3>
+            <button class="modal-close" onclick="closeModal('encryptModal')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">文件夹</label>
+                <input type="text" class="form-input" id="encryptFileName" readonly>
+            </div>
+            <div class="form-group">
+                <label class="form-label">访问密码</label>
+                <input type="password" class="form-input" id="encryptPassword" placeholder="输入密码" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label class="form-label">确认密码</label>
+                <input type="password" class="form-input" id="encryptPassword2" placeholder="再次输入密码" autocomplete="off">
+            </div>
+            <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin:0">
+                密码以哈希形式保存在该文件夹内的隐藏文件 <code>.encry</code> 中，网盘列表不会显示。
+                如需重置密码，可在服务器上删除该文件（密码错误时同样如此）。
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" id="encryptRemoveBtn" onclick="removeFolderEncryption()" style="display:none">取消加密</button>
+            <button class="btn" onclick="closeModal('encryptModal')">取消</button>
+            <button class="btn btn-primary" onclick="doFolderEncrypt()">加密</button>
+        </div>
+    </div>
+</div>
+
+<!-- Share List Modal -->
+<div class="modal-overlay" id="shareListModal">
+    <div class="modal" style="width:600px">
+        <div class="modal-header">
+            <h3>分享管理</h3>
+            <button class="modal-close" onclick="closeModal('shareListModal')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body" id="shareListBody" style="max-height:60vh;overflow-y:auto">
+            <div class="loading"><div class="spinner"></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal-overlay" id="qrModal">
+    <div class="modal" style="width:320px">
+        <div class="modal-header">
+            <h3>扫码下载</h3>
+            <button class="modal-close" onclick="closeModal('qrModal')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body" style="text-align:center">
+            <div style="display:flex;justify-content:center;padding:16px;background:var(--bg-card);border:1px solid var(--border-light);border-radius:10px">
+                <img id="qrModalImg" alt="二维码" style="width:240px;height:240px">
+            </div>
+            <p id="qrModalUrl" style="font-size:12px;color:var(--text-secondary);margin-top:12px;word-break:break-all"></p>
+            <p style="font-size:12px;color:var(--text-secondary);margin-top:4px">使用手机扫码即可打开下载</p>
+        </div>
+    </div>
+</div>
+
+<!-- Move Modal -->
+<div class="modal-overlay" id="moveModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>移动到</h3>
+            <button class="modal-close" onclick="closeModal('moveModal')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body" style="padding:0">
+            <div class="move-path" id="movePath">
+                当前：<span>根目录</span>
+            </div>
+            <div class="move-grid" id="moveGrid"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal('moveModal')">取消</button>
+            <button class="btn btn-primary" id="moveBtn" onclick="doMove()">移动到这里</button>
+        </div>
+    </div>
+</div>
+
+<!-- Download Folder Modal -->
+<div class="modal-overlay" id="downloadFolderModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>下载文件夹</h3>
+            <button class="modal-close" onclick="closeModal('downloadFolderModal')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom:16px;color:var(--text-secondary);font-size:14px">选择下载方式：</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+                <button class="btn btn-primary" style="justify-content:center;padding:16px" onclick="downloadFolderBrowserZip()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    浏览器打包（推荐，速度快）
+                </button>
+                <button class="btn" style="justify-content:center;padding:16px" onclick="downloadFolderZip()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    服务器打包（速度慢）
+                </button>
+                <button class="btn" style="justify-content:center;padding:16px" onclick="downloadFolderQueue()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    异步并发下载（推荐，速度快）
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Batch Download Modal -->
+<div class="modal-overlay" id="batchDownloadModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>批量下载</h3>
+            <button class="modal-close" onclick="closeModal('batchDownloadModal')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom:16px;color:var(--text-secondary);font-size:14px">已选择 <strong id="batchDlCount">0</strong> 个项目，选择下载方式：</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+                <button class="btn btn-primary" style="justify-content:center;padding:16px" onclick="batchDownloadBrowserZip()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    浏览器打包（推荐，速度快）
+                </button>
+                <button class="btn" style="justify-content:center;padding:16px" onclick="batchDownloadZip()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    服务器打包（速度慢）
+                </button>
+                <button class="btn" style="justify-content:center;padding:16px" onclick="batchDownloadQueue()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    异步并发下载（推荐，速度快）
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Download Progress -->
+<div class="dl-progress" id="dlProgress">
+    <div class="dl-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span id="dlTitleText">正在下载...</span>
+    </div>
+    <div class="dl-bar"><div class="fill" id="dlFill" style="width:0%"></div></div>
+    <div class="dl-info" id="dlInfo"></div>
+</div>
+
+<!-- Batch Download Progress Panel -->
+<div class="dl-batch-panel" id="dlBatchPanel">
+    <div class="dl-batch-header">
+        <div class="dl-batch-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span id="dlBatchTitle">批量下载中...</span>
+        </div>
+        <button class="dl-batch-close" onclick="cancelBatchDownload()" title="取消全部">&times;</button>
+    </div>
+    <div class="dl-batch-overall">
+        <div class="dl-batch-summary">
+            <span id="dlBatchSummary">0 / 0 个文件</span>
+            <span id="dlBatchSpeed"></span>
+        </div>
+        <div class="dl-batch-bar"><div class="fill" id="dlBatchFill" style="width:0%"></div></div>
+    </div>
+    <div class="dl-batch-list" id="dlBatchList"></div>
+    <div class="dl-batch-cancel">
+        <button onclick="cancelBatchDownload()">取消全部下载</button>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="preview-overlay" id="previewOverlay" onclick="handlePreviewOverlayClick(event)">
+    <div class="preview-header">
+        <span class="preview-title" id="previewTitle"></span>
+        <div class="preview-header-btns">
+            <button onclick="event.stopPropagation();downloadPreviewFile()" title="下载">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button onclick="closePreview()" title="关闭">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+    </div>
+    <div class="preview-body" id="previewBody"></div>
+    <div class="preview-toolbar hidden" id="previewToolbar">
+        <button onclick="event.stopPropagation();zoomImg(-0.25)" title="缩小">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <span class="zoom-label" id="zoomLabel">100%</span>
+        <button onclick="event.stopPropagation();zoomImg(0.25)" title="放大">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button onclick="event.stopPropagation();resetZoom()" title="重置">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+    </div>
+</div>
+
+<script>
+// Force the browser to bypass its HTTP cache for every API call, so a page
+// refresh always reflects the latest server state (file list, settings, ...).
+(function () {
+    const _fetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+        init = init || {};
+        init.cache = 'no-store';
+        return _fetch(input, init);
+    };
+})();
+
+// ============ State ============
+let currentPath = '';
+let fileItems = [];
+let selectedItems = new Set();
+let isSearchMode = false;
+let searchItems = [];
+let contextTarget = null;
+let moveTarget = '';
+let moveMode = 'single'; // 'single' or 'batch'
+
+// ============ Preview ============
+const PREVIEW_TYPES = {
+    image: ['jpg','jpeg','png','gif','bmp','webp','svg','ico','tiff','avif'],
+    video: ['mp4','webm','ogg','ogv','mov','m4v','mkv','avi','flv','wmv','ts','m2ts','3gp','3g2','rmvb','rm'],
+    audio: ['mp3','aac','m4a','wav','flac','oga','opus','wma'],
+    text:  ['txt','md','log','ini','conf','cfg','csv','json','xml','yaml','yml','sh','bat','py','js','ts','css','html','htm','php','java','c','cpp','h','go','rs','sql']
+};
+
+let previewCurrentPath = '';
+let imgZoom = 1;
+
+function isPreviewable(ext) {
+    ext = (ext || '').toLowerCase();
+    return PREVIEW_TYPES.image.includes(ext) || PREVIEW_TYPES.video.includes(ext) ||
+           (PREVIEW_TYPES.audio && PREVIEW_TYPES.audio.includes(ext)) || PREVIEW_TYPES.text.includes(ext);
+}
+
+function getPreviewType(ext) {
+    ext = (ext || '').toLowerCase();
+    if (PREVIEW_TYPES.image.includes(ext)) return 'image';
+    if (PREVIEW_TYPES.video.includes(ext)) return 'video';
+    if (PREVIEW_TYPES.audio && PREVIEW_TYPES.audio.includes(ext)) return 'audio';
+    if (PREVIEW_TYPES.text.includes(ext))  return 'text';
+    return null;
+}
+
+async function previewFile(path) {
+    const name = path.split('/').pop();
+    const ext  = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+    const type = getPreviewType(ext);
+    if (!type) { downloadFile(path, false); return; }
+
+    previewCurrentPath = path;
+    imgZoom = 1;
+
+    const overlay  = document.getElementById('previewOverlay');
+    const body     = document.getElementById('previewBody');
+    const toolbar  = document.getElementById('previewToolbar');
+    const titleEl  = document.getElementById('previewTitle');
+
+    titleEl.textContent = name;
+    body.innerHTML = `<div class="preview-loading"><div class="spinner"></div><span>加载中...</span></div>`;
+    toolbar.classList.add('hidden');
+    overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    // ESC 关闭
+    document._previewEscFn = e => { if (e.key === 'Escape') closePreview(); };
+    document.addEventListener('keydown', document._previewEscFn);
+
+    const url = `api.php?action=download&path=${encodeURIComponent(path)}`;
+    // Media preview uses the inline streaming endpoint so the browser plays
+    // while buffering (progressive playback + seeking) instead of waiting for
+    // the whole file via Content-Disposition: attachment.
+    const mediaUrl = `api.php?action=stream&path=${encodeURIComponent(path)}`;
+
+    if (type === 'image') {
+        const img = document.createElement('img');
+        img.className = 'preview-img';
+        img.alt = name;
+        img.onload = () => {
+            body.innerHTML = '';
+            body.appendChild(img);
+            toolbar.classList.remove('hidden');
+            document.getElementById('zoomLabel').textContent = '100%';
+        };
+        img.onerror = () => {
+            body.innerHTML = `<div class="preview-error"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><p>图片加载失败</p></div>`;
+        };
+        img.src = url;
+    } else if (type === 'video') {
+        body.innerHTML = '';
+        // Formats browsers can usually play natively; others get a hint.
+        const nativeMime = {mp4:1,m4v:1,webm:1,ogg:1,ogv:1,mov:1};
+        const isNative = !!nativeMime[ext];
+
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:960px';
+        wrapper.addEventListener('click', e => e.stopPropagation());
+
+        if (!isNative) {
+            const notice = document.createElement('div');
+            notice.style.cssText = 'background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);border-radius:8px;padding:8px 14px;color:#fbbf24;font-size:12px;display:flex;align-items:center;gap:8px;width:100%';
+            notice.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+                + '<span>' + ext.toUpperCase() + ' 格式：部分浏览器可能不支持原生播放，如无法播放请下载后使用本地播放器。</span>';
+            wrapper.appendChild(notice);
+        }
+
+        const video = document.createElement('video');
+        video.className = 'preview-video';
+        video.controls = true;
+        video.autoplay = false;
+        // metadata: fetch headers first, then byte ranges on demand so the
+        // player starts immediately and supports seeking to any position.
+        video.preload = 'metadata';
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        video.style.cssText = 'width:100%;max-height:calc(100vh - 160px);border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,.4);outline:none;background:#000';
+        // Use video.src (not a <source> child) for a single stable resource so
+        // Range/seek requests work reliably across browsers.
+        video.src = mediaUrl;
+
+        let errShown = false;
+        video.onerror = () => {
+            if (errShown) return; errShown = true;
+            body.innerHTML = `<div class="preview-error">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:56px;height:56px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <p style="margin-top:12px">浏览器无法播放此格式 (${ext.toUpperCase()})</p>
+                <p style="font-size:12px;margin-top:8px;opacity:.6">建议下载后使用 VLC / PotPlayer 等播放器打开</p>
+                <button onclick="downloadPreviewFile()" style="margin-top:16px;padding:8px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">
+                    <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' style='vertical-align:middle;margin-right:4px'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/></svg>
+                    下载文件
+                </button></div>`;
+        };
+
+        // 键盘快捷键：空格=暂停/播放，左右箭头=快进快退 5s，上下=音量
+        document._videoKeyFn = (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key === ' ' || e.key === 'k') { e.preventDefault(); video.paused ? video.play() : video.pause(); }
+            else if (e.key === 'ArrowRight' || e.key === 'l') { e.preventDefault(); video.currentTime = Math.min(video.duration, video.currentTime + 5); }
+            else if (e.key === 'ArrowLeft'  || e.key === 'j') { e.preventDefault(); video.currentTime = Math.max(0, video.currentTime - 5); }
+            else if (e.key === 'ArrowUp')   { e.preventDefault(); video.volume = Math.min(1, video.volume + 0.1); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); video.volume = Math.max(0, video.volume - 0.1); }
+            else if (e.key === 'f') { e.preventDefault(); video.requestFullscreen && video.requestFullscreen(); }
+            else if (e.key === 'm') { e.preventDefault(); video.muted = !video.muted; }
+        };
+        document.addEventListener('keydown', document._videoKeyFn);
+
+        wrapper.appendChild(video);
+
+        // 快捷键提示条
+        const hint = document.createElement('div');
+        hint.style.cssText = 'color:rgba(255,255,255,.4);font-size:11px;text-align:center;line-height:1.8';
+        hint.textContent = '快捷键：空格 暂停/播放 ｜ ← → 快退/快进5秒 ｜ ↑ ↓ 音量 ｜ F 全屏 ｜ M 静音';
+        wrapper.appendChild(hint);
+
+        body.innerHTML = '';
+        body.style.padding = '54px 24px 16px';
+        body.appendChild(wrapper);
+
+    } else if (type === 'audio') {
+        body.innerHTML = '';
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:20px;padding:40px 24px';
+        wrapper.addEventListener('click', e => e.stopPropagation());
+        const audioIcon = document.createElement('div');
+        audioIcon.innerHTML = '<svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
+        const audioEl = document.createElement('audio');
+        audioEl.controls = true;
+        audioEl.preload = 'metadata';
+        audioEl.setAttribute('playsinline', '');
+        audioEl.style.cssText = 'width:320px;max-width:90vw';
+        const audioMime = {mp3:'audio/mpeg',aac:'audio/aac',m4a:'audio/mp4',
+            wav:'audio/wav',flac:'audio/flac',oga:'audio/ogg',opus:'audio/opus',wma:'audio/x-ms-wma'};
+        audioEl.src = mediaUrl;
+        audioEl.type = audioMime[ext] || 'audio/mpeg';
+        const audioName = document.createElement('p');
+        audioName.style.cssText = 'color:rgba(255,255,255,.7);font-size:14px;text-align:center';
+        audioName.textContent = name;
+        wrapper.appendChild(audioIcon);
+        wrapper.appendChild(audioName);
+        wrapper.appendChild(audioEl);
+        body.innerHTML = '';
+        body.appendChild(wrapper);
+
+    } else if (type === 'text') {
+        try {
+            const res  = await fetch(url);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const text = await res.text();
+            const wrap = document.createElement('div');
+            wrap.className = 'preview-text-wrap';
+            const pre = document.createElement('pre');
+            pre.textContent = text;
+            wrap.appendChild(pre);
+            body.innerHTML = '';
+            body.appendChild(wrap);
+            wrap.addEventListener('click', e => e.stopPropagation());
+        } catch(e) {
+            body.innerHTML = `<div class="preview-error"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>文件读取失败: ${escapeHtml(e.message)}</p></div>`;
+        }
+    }
+}
+
+function closePreview() {
+    const overlay = document.getElementById('previewOverlay');
+    overlay.classList.remove('show');
+    document.body.style.overflow = '';
+    // 停止视频/音频播放
+    overlay.querySelectorAll('video,audio').forEach(el => { el.pause(); el.src = ''; });
+    const body = document.getElementById('previewBody');
+    body.innerHTML = '';
+    body.style.padding = '';
+    if (document._previewEscFn) {
+        document.removeEventListener('keydown', document._previewEscFn);
+        document._previewEscFn = null;
+    }
+    if (document._videoKeyFn) {
+        document.removeEventListener('keydown', document._videoKeyFn);
+        document._videoKeyFn = null;
+    }
+}
+
+function handlePreviewOverlayClick(e) {
+    // 只有点击遮罩本身才关闭，不点击内容区域（视频、图片、文字等）
+    const overlay = document.getElementById('previewOverlay');
+    if (e.target === overlay) {
+        closePreview();
+    }
+}
+
+function downloadPreviewFile() {
+    if (previewCurrentPath) downloadFile(previewCurrentPath, false);
+}
+
+function zoomImg(delta) {
+    imgZoom = Math.min(4, Math.max(0.25, imgZoom + delta));
+    const img = document.querySelector('.preview-img');
+    if (img) img.style.transform = `scale(${imgZoom})`;
+    document.getElementById('zoomLabel').textContent = Math.round(imgZoom * 100) + '%';
+}
+
+function resetZoom() {
+    imgZoom = 1;
+    const img = document.querySelector('.preview-img');
+    if (img) img.style.transform = '';
+    document.getElementById('zoomLabel').textContent = '100%';
+}
+
+// ============ Init ============
+async function init() {
+    try {
+        const res = await fetch('auth.php?action=check');
+        if (res.ok) {
+            const text = await res.text();
+            try {
+                const data = JSON.parse(text);
+                if (data.authenticated) {
+                    enterApp();
+                    bindEvents();
+                    return;
+                }
+            } catch(e) {
+                console.error('auth check parse error:', e, text);
+            }
+        } else {
+            console.error('auth check response:', res.status, await res.text());
+        }
+    } catch(e) {
+        console.warn('Session check failed:', e);
+    }
+    // 未登录，显示登录界面
+    document.getElementById('loginScreen').classList.remove('hidden');
+    bindEvents();
+}
+
+function bindEvents() {
+    // Enter key on login
+    document.getElementById('loginPassword').addEventListener('keydown', e => {
+        if (e.key === 'Enter') doLogin();
+    });
+    // Close context menu
+    document.addEventListener('click', () => {
+        document.getElementById('contextMenu').classList.remove('show');
+    });
+    // Upload zone drag and drop（支持拖拽文件夹递归读取）
+    const zone = document.getElementById('uploadZone');
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', async e => {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+
+        const items = e.dataTransfer.items;
+        if (items && items.length > 0) {
+            // 使用 webkitGetAsEntry 递归读取文件夹
+            const allFiles = await readAllEntries(items);
+            if (allFiles.length > 0) {
+                addToUploadQueue(allFiles);
+            }
+        } else {
+            // 降级处理：直接用 files（某些旧浏览器不支持 entries）
+            addToUploadQueue(e.dataTransfer.files);
+        }
+    });
+}
+
+// ============ Auth ============
+async function doLogin() {
+    const pw = document.getElementById('loginPassword').value;
+    if (!pw) { document.getElementById('loginError').textContent = '请输入密码'; return; }
+
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.textContent = '验证中...';
+
+    try {
+        const res = await fetch('auth.php?action=login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({password: pw})
+        });
+        if (!res.ok) {
+            document.getElementById('loginError').textContent = '服务器错误 (' + res.status + ')';
+            btn.disabled = false;
+            btn.textContent = '进入网盘';
+            return;
+        }
+        const data = await res.json();
+        if (data.success) {
+            enterApp();
+        } else {
+            document.getElementById('loginError').textContent = data.message || '登录失败';
+            document.getElementById('loginPassword').select();
+        }
+    } catch(e) {
+        document.getElementById('loginError').textContent = '网络错误，请检查服务器是否正常运行';
+    }
+    btn.disabled = false;
+    btn.textContent = '进入网盘';
+}
+
+async function doLogout() {
+    try {
+        await fetch('auth.php?action=logout');
+    } catch(e) {}
+    location.reload();
+}
+
+function enterApp() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('app').classList.add('active');
+    loadFiles('');
+}
+
+// ============ Folder Encryption ============
+function openEncryptModal(path, name) {
+    contextTarget = { path, name, isDir: true };
+    document.getElementById('encryptFileName').value = name || path;
+    document.getElementById('encryptPassword').value = '';
+    document.getElementById('encryptPassword2').value = '';
+    const item = fileItems.find(x => x.path === path && x.is_dir);
+    document.getElementById('encryptRemoveBtn').style.display = (item && item.encrypted) ? '' : 'none';
+    openModal('encryptModal');
+}
+
+async function doFolderEncrypt() {
+    const pw = document.getElementById('encryptPassword').value;
+    const pw2 = document.getElementById('encryptPassword2').value;
+    if (!pw) { showToast('请输入密码', 'error'); return; }
+    if (pw !== pw2) { showToast('两次输入的密码不一致', 'error'); return; }
+    try {
+        const res = await fetch('api.php?action=folder_encrypt', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({path: contextTarget.path, password: pw})
+        });
+        const data = await res.json();
+        if (data.success) {
+            closeModal('encryptModal');
+            showToast('文件夹已加密', 'success');
+            loadFiles(currentPath);
+        } else {
+            showToast(data.message || '加密失败', 'error');
+        }
+    } catch (e) {
+        showToast('加密失败：' + e.message, 'error');
+    }
+}
+
+async function removeFolderEncryption() {
+    if (!confirm('确定取消此文件夹的加密吗？')) return;
+    try {
+        const res = await fetch('api.php?action=folder_encrypt', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({path: contextTarget.path, remove: true})
+        });
+        const data = await res.json();
+        if (data.success) {
+            closeModal('encryptModal');
+            showToast('已取消加密', 'success');
+            loadFiles(currentPath);
+        } else {
+            showToast(data.message || '操作失败', 'error');
+        }
+    } catch (e) {
+        showToast('操作失败：' + e.message, 'error');
+    }
+}
+
+function showFolderUnlock(path, folder) {
+    const body = document.getElementById('fileBody');
+    body.innerHTML = `
+        <div class="empty-state" style="padding:60px 20px">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" style="margin-bottom:16px"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            <h3>文件夹已加密</h3>
+            <p>请输入访问密码后查看：${escapeHtml(folder || path || '根目录')}</p>
+            <div style="margin:20px auto 0;max-width:320px;display:flex;gap:8px">
+                <input type="password" class="form-input" id="folderUnlockPassword" placeholder="访问密码" autocomplete="off" style="flex:1">
+                <button class="btn btn-primary" onclick="unlockEncryptedFolder()">解锁</button>
+            </div>
+            <p id="folderUnlockError" style="color:var(--danger);font-size:13px;margin-top:10px"></p>
+        </div>`;
+    setTimeout(() => {
+        const input = document.getElementById('folderUnlockPassword');
+        if (!input) return;
+        input.focus();
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') unlockEncryptedFolder(); });
+    }, 50);
+}
+
+async function unlockEncryptedFolder() {
+    const pw = document.getElementById('folderUnlockPassword').value;
+    if (!pw) { document.getElementById('folderUnlockError').textContent = '请输入密码'; return; }
+    const res = await fetch('api.php?action=folder_unlock', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({path: currentPath, password: pw})
+    });
+    const data = await res.json();
+    if (data.success && data.data.unlocked) {
+        loadFiles(currentPath);
+    } else {
+        const err = document.getElementById('folderUnlockError');
+        if (err) err.textContent = data.message || '密码错误';
+    }
+}
+
+// ============ File Operations ============
+async function loadFiles(path) {
+    currentPath = path || '';
+    
+    isSearchMode = false;
+    searchItems = [];
+    selectedItems.clear();
+    document.getElementById('searchInput').value = '';
+    const body = document.getElementById('fileBody');
+    // Keep the current rows visible while the new list loads: the old
+    // spinner flash made every folder click feel slow on a fast server.
+    if (body.querySelector('.file-row')) {
+        body.classList.add('is-loading');
+    } else {
+        body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    }
+    updateBreadcrumbFromPath(currentPath);
+
+    try {
+        const url = `api.php?action=list&path=${encodeURIComponent(currentPath)}`;
+        const res = await fetch(url);
+        body.classList.remove('is-loading');
+        if (res.status === 423) {
+            let locked = {};
+            try { locked = await res.json(); } catch (e) {}
+            showFolderUnlock(currentPath, locked.folder || locked.path);
+            return;
+        }
+        if (!res.ok) {
+            const text = await res.text();
+            body.innerHTML = `<div class="empty-state"><p>加载失败 (${res.status})</p><p style="color:#999;font-size:12px;margin-top:8px">${escapeHtml(text.substring(0, 500))}</p></div>`;
+            console.error('loadFiles HTTP error:', res.status, text);
+            return;
+        }
+        let data;
+        const text = await res.text();
+        try {
+            data = JSON.parse(text);
+        } catch(jsonErr) {
+            body.innerHTML = `<div class="empty-state"><p>加载失败，服务器返回异常数据</p><p style="color:#999;font-size:12px;margin-top:8px">${escapeHtml(text.substring(0, 500))}</p></div>`;
+            console.error('loadFiles parse error:', text);
+            return;
+        }
+        if (!data.success) { showToast(data.message, 'error'); return; }
+        fileItems = data.data.items;
+        updateSelectAll();
+        updateBreadcrumb(data.data.current_path, data.data.parent_path);
+        renderFileList();
+        updateStatus();
+        
+        // 高亮显示之前设置的定位路径
+        if (highlightPath) {
+            const pathToHighlight = highlightPath;
+            const fileNameToHighlight = highlightFileName;
+            highlightPath = null;
+            highlightFileName = null;
+
+            setTimeout(() => {
+                // 先尝试精确路径匹配
+                let row = document.querySelector(`.file-row[data-path="${CSS.escape(pathToHighlight)}"]`);
+                // 如果找不到，尝试按文件名匹配
+                if (!row && fileNameToHighlight) {
+                    const allRows = document.querySelectorAll('.file-row');
+                    for (const r of allRows) {
+                        const nameEl = r.querySelector('.file-name span');
+                        if (nameEl && nameEl.textContent.trim() === fileNameToHighlight) {
+                            row = r;
+                            break;
+                        }
+                    }
+                }
+                if (row) {
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    row.classList.add('highlight');
+                    setTimeout(() => row.classList.remove('highlight'), 2000);
+                }
+            }, 200);
+        }
+    } catch(e) {
+        body.classList.remove('is-loading');
+        body.innerHTML = `<div class="empty-state"><p>加载失败，请重试</p><p style="color:#999;font-size:12px;margin-top:8px">${escapeHtml(e.message)}</p></div>`;
+        console.error('loadFiles error:', e);
+    }
+}
+
+function renderFileList(items = null) {
+    const list = items || fileItems;
+    const body = document.getElementById('fileBody');
+
+    if (list.length === 0) {
+        body.innerHTML = `
+            <div class="empty-state">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <h3>此文件夹为空</h3>
+                <p>上传文件或创建文件夹开始使用</p>
+            </div>`;
+        return;
+    }
+
+    body.innerHTML = list.map((item, index) => `
+        <div class="file-row ${selectedItems.has(item.path) ? 'selected' : ''}"
+             data-path="${escapeHtml(item.path)}" data-isdir="${item.is_dir ? 1 : 0}" data-index="${index}"
+             onclick="handleRowClick(event, '${escapeJs(item.path)}', ${item.is_dir})"
+             oncontextmenu="handleContextMenu(event, '${escapeJs(item.path)}', ${item.is_dir}, '${escapeJs(item.name)}')">
+            <div class="file-check">
+                <div class="checkbox ${selectedItems.has(item.path) ? 'checked' : ''}" 
+                     onclick="event.stopPropagation();toggleSelect('${escapeJs(item.path)}')">
+                    ${selectedItems.has(item.path) ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+                </div>
+            </div>
+            <div class="file-name">
+                ${getFileIcon(item.is_dir, item.extension || '', item.name)}
+                <span title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+                ${item.encrypted ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" style="margin-left:6px"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>' : ''}
+            </div>
+            <div class="file-size">${item.is_dir ? `${formatSize(item.size)} <span class="file-count">(${item.file_count ?? 0})</span>` : formatSize(item.size)}</div>
+            <div class="file-date">${formatDate(item.modified)}</div>
+            <div class="file-actions">
+                ${isSearchMode ? `
+                <button onclick="event.stopPropagation();openParentDir('${escapeJs(item.path)}')" title="打开所在目录">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </button>
+                ` : ''}
+                ${!item.is_dir && isPreviewable(item.extension || '') ? `
+                <button onclick="event.stopPropagation();previewFile('${escapeJs(item.path)}')" title="预览" style="color:var(--primary)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                ` : ''}
+                <button onclick="event.stopPropagation();downloadFile('${escapeJs(item.path)}',${item.is_dir})" title="下载">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+                <button onclick="event.stopPropagation();openShareModal('${escapeJs(item.path)}','${escapeJs(item.name)}')" title="分享">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                </button>
+                <button onclick="event.stopPropagation();openRenameModal('${escapeJs(item.path)}','${escapeJs(item.name)}')" title="重命名">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button onclick="event.stopPropagation();moveMode='single';openMoveModal('${escapeJs(item.path)}')" title="移动">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l-3 3 3 3"/><path d="M2 12h14"/><path d="m15 5 3 3-3 3"/><path d="M22 12H14"/><path d="m15 19-3-3 3-3"/></svg>
+                </button>
+                <button onclick="event.stopPropagation();deleteFile('${escapeJs(item.path)}')" title="删除" style="color:var(--danger)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function handleRowClick(event, path, isDir) {
+    // 排除复选框和操作按钮的点击
+    if (event.target.closest('.file-check') || event.target.closest('.file-actions')) return;
+    if (isSearchMode) {
+        // 搜索模式下，文件夹直接打开（进入该文件夹），文件预览/下载
+        if (isDir) {
+            // 直接打开该文件夹，而不是打开父目录
+            isSearchMode = false;
+            searchItems = [];
+            document.getElementById('searchInput').value = '';
+            loadFiles(path);
+        } else {
+            openOrPreview(path);
+        }
+        return;
+    }
+    if (isDir) {
+        loadFiles(path);
+    } else {
+        openOrPreview(path);
+    }
+}
+
+// 判断是否可预览，可预览则调用预览，否则直接下载
+function openOrPreview(path) {
+    const ext = path.includes('.') ? path.split('.').pop().toLowerCase() : '';
+    if (PREVIEW_TYPES.image.includes(ext) || PREVIEW_TYPES.video.includes(ext) ||
+        (PREVIEW_TYPES.audio && PREVIEW_TYPES.audio.includes(ext)) || PREVIEW_TYPES.text.includes(ext)) {
+        previewFile(path);
+    } else {
+        downloadFile(path, false);
+    }
+}
+
+// ============ Selection ============
+function toggleSelect(path) {
+    if (selectedItems.has(path)) {
+        selectedItems.delete(path);
+    } else {
+        selectedItems.add(path);
+    }
+    renderFileList();
+    updateBatchButtons();
+    updateSelectAll();
+}
+
+function toggleSelectAll() {
+    if (selectedItems.size === fileItems.length && fileItems.length > 0) {
+        selectedItems.clear();
+    } else {
+        fileItems.forEach(item => selectedItems.add(item.path));
+    }
+    renderFileList();
+    updateBatchButtons();
+    updateSelectAll();
+}
+
+function updateSelectAll() {
+    const el = document.getElementById('selectAll');
+    if (selectedItems.size === 0) {
+        el.className = 'select-all';
+        el.innerHTML = '';
+    } else if (selectedItems.size === fileItems.length) {
+        el.className = 'select-all checked';
+        el.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else {
+        el.className = 'select-all partial';
+        el.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+    }
+}
+
+function updateBatchButtons() {
+    const has = selectedItems.size > 0;
+    const bar = document.getElementById('selectionBar');
+    if (has) {
+        bar.classList.remove('hidden');
+        document.getElementById('selCount').textContent = selectedItems.size;
+    } else {
+        bar.classList.add('hidden');
+    }
+}
+
+function clearSelection() {
+    selectedItems.clear();
+    renderFileList();
+    updateBatchButtons();
+    updateSelectAll();
+}
+
+// ============ Context Menu ============
+function handleContextMenu(event, path, isDir, name) {
+    event.preventDefault();
+    event.stopPropagation();
+    contextTarget = { path, isDir, name };
+    const menu = document.getElementById('contextMenu');
+
+    // 控制「预览」选项的显示：仅非文件夹且为可预览类型时显示
+    const ext = path.includes('.') ? path.split('.').pop().toLowerCase() : '';
+    const canPreview = !isDir && (PREVIEW_TYPES.image.includes(ext) || PREVIEW_TYPES.video.includes(ext) ||
+        (PREVIEW_TYPES.audio && PREVIEW_TYPES.audio.includes(ext)) || PREVIEW_TYPES.text.includes(ext));
+    document.getElementById('ctxPreview').style.display = canPreview ? '' : 'none';
+    // 生成直链：仅文件时显示（文件夹不支持直链）
+    const dlEl = document.getElementById('ctxDirectLink');
+    if (dlEl) dlEl.style.display = isDir ? 'none' : '';
+    // Folder encryption only applies to folders
+    const encEl = document.getElementById('ctxEncrypt');
+    if (encEl) encEl.style.display = isDir ? '' : 'none';
+
+    menu.style.left = event.clientX + 'px';
+    menu.style.top = event.clientY + 'px';
+    menu.classList.add('show');
+
+    // Adjust position if off-screen
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) menu.style.left = (event.clientX - rect.width) + 'px';
+    if (rect.bottom > window.innerHeight) menu.style.top = (event.clientY - rect.height) + 'px';
+}
+
+function contextAction(action) {
+    document.getElementById('contextMenu').classList.remove('show');
+    if (!contextTarget) return;
+    const { path, isDir, name } = contextTarget;
+
+    switch(action) {
+        case 'preview':
+            previewFile(path);
+            break;
+        case 'open':
+            if (isDir) loadFiles(path);
+            else openOrPreview(path);
+            break;
+        case 'download':
+            downloadFile(path, isDir);
+            break;
+        case 'rename':
+            openRenameModal(path, name);
+            break;
+        case 'move':
+            moveMode = 'single';
+            openMoveModal(path);
+            break;
+        case 'share':
+            openShareModal(path, name);
+            break;
+        case 'direct_link':
+            openDirectLinkModal(path, name);
+            break;
+        case 'encrypt':
+            openEncryptModal(path, name);
+            break;
+        case 'delete':
+            deleteFile(path);
+            break;
+    }
+}
+
+// ============ Breadcrumb ============
+function updateBreadcrumb(currentPath, parentPath) {
+    const el = document.getElementById('breadcrumb');
+    let html = `<a onclick="loadFiles('')">根目录</a>`;
+
+    if (currentPath) {
+        const parts = currentPath.split('/');
+        let accumulated = '';
+        parts.forEach((part, i) => {
+            accumulated += (i > 0 ? '/' : '') + part;
+            const path = accumulated;
+            html += `<span class="sep">/</span>`;
+            if (i === parts.length - 1) {
+                html += `<span>${escapeHtml(part)}</span>`;
+            } else {
+                html += `<a onclick="loadFiles('${escapeJs(path)}')">${escapeHtml(part)}</a>`;
+            }
+        });
+    }
+
+    el.innerHTML = html;
+}
+
+// Paint the breadcrumb immediately from the clicked path; the server response
+// will confirm it a moment later.
+function updateBreadcrumbFromPath(path) {
+    const normalized = (path || '').replace(/\\/g, '/');
+    const parent = normalized.includes('/') ? normalized.slice(0, normalized.lastIndexOf('/')) : '';
+    updateBreadcrumb(normalized, parent);
+}
+
+// ============ File Icons ============
+function getFileIcon(isDir, ext, name) {
+    if (isDir) return `<svg width="22" height="22" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+    
+    const iconMap = {
+        image: ['jpg','jpeg','png','gif','bmp','webp','svg','ico','tiff'],
+        video: ['mp4','avi','mkv','mov','wmv','flv','webm','m4v'],
+        audio: ['mp3','wav','flac','aac','ogg','wma','m4a'],
+        pdf: ['pdf'],
+        doc: ['doc','docx','xls','xlsx','ppt','pptx','txt','rtf','csv'],
+        zip: ['zip','rar','7z','tar','gz','bz2'],
+        code: ['html','css','js','ts','py','java','c','cpp','h','php','json','xml','yml','sql','sh','bat','md']
+    };
+
+    const colorMap = {image:'#ec4899',video:'#8b5cf6',audio:'#06b6d4',pdf:'#ef4444',doc:'#3b82f6',zip:'#f97316',code:'#10b981'};
+    
+    for (const [type, exts] of Object.entries(iconMap)) {
+        if (exts.includes(ext)) {
+            const c = colorMap[type];
+            const iconPaths = {
+                image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+                video:'<polygon points="5 3 19 12 5 21 5 3"/>',
+                audio:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+                pdf:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
+                doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+                zip:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+                code:'<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>'
+            };
+            return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2">${iconPaths[type]}</svg>`;
+        }
+    }
+    return `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+}
+
+// ============ Download ============
+function downloadFile(path, isDir) {
+    if (isDir) {
+        contextTarget = { path, isDir: true };
+        openModal('downloadFolderModal');
+    } else {
+        window.location.href = `api.php?action=download&path=${encodeURIComponent(path)}`;
+    }
+}
+
+// ============ Open Parent Directory ============
+let highlightPath = null; // 要高亮显示的文件路径
+let highlightFileName = null; // 要高亮显示的文件名
+
+function openParentDir(path) {
+    // 检查path是否有效
+    if (!path || path === '') {
+        showToast('路径无效', 'error');
+        return;
+    }
+    
+    // 统一将反斜杠转为正斜杠，兼容 Windows 和 Linux 路径
+    const normalizedPath = path.replace(/\\/g, '/');
+    
+    // 获取父目录路径和文件名
+    let parentPath;
+    const lastSlash = normalizedPath.lastIndexOf('/');
+    
+    if (lastSlash === -1) {
+        // 文件在根目录下，父目录为空
+        parentPath = '';
+        highlightFileName = normalizedPath; // 整个path就是文件名
+    } else {
+        parentPath = normalizedPath.substring(0, lastSlash);
+        highlightFileName = normalizedPath.substring(lastSlash + 1); // 文件名
+    }
+    
+    // 设置要高亮显示的文件路径（使用标准化后的路径）
+    highlightPath = normalizedPath;
+    
+    // 退出搜索模式并加载父目录
+    isSearchMode = false;
+    searchItems = [];
+    document.getElementById('searchInput').value = '';
+    
+    loadFiles(parentPath);
+    showToast('已打开所在目录', 'success');
+}
+
+// ============ Browser-side Zip Functions (using JSZip) ============
+
+/**
+ * 获取文件夹内所有文件列表
+ */
+async function getFolderFileList(path) {
+    const res = await fetch(`api.php?action=download_folder&path=${encodeURIComponent(path)}&mode=queue`);
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message);
+    return data.data;
+}
+
+/**
+ * 浏览器端打包下载文件夹
+ */
+async function downloadFolderBrowserZip() {
+    closeModal('downloadFolderModal');
+    if (!contextTarget) return;
+    const path = contextTarget.path;
+    const name = path.split('/').pop() || '文件夹';
+
+    try {
+        showDlProgress('正在获取文件列表...');
+        const files = await getFolderFileList(path);
+
+        if (files.length === 0) {
+            hideDlProgress();
+            showToast('文件夹为空', 'warning');
+            return;
+        }
+
+        const zip = new JSZip();
+        let downloaded = 0;
+        const total = files.length;
+
+        showDlProgress(`正在下载文件... (0/${total})`);
+
+        // 并行下载文件（最多5个并发）
+        const concurrency = 5;
+        const downloadFile = async (file) => {
+            const response = await fetch(`api.php?action=download&path=${encodeURIComponent(file.path)}`);
+            if (!response.ok) throw new Error(`下载失败: ${file.name}`);
+            const blob = await response.blob();
+            zip.file(file.path.substring(path.length + 1), blob);
+            downloaded++;
+            updateDlProgress(downloaded, total, `正在下载 (${downloaded}/${total})`);
+        };
+
+        // 分批并行下载
+        for (let i = 0; i < files.length; i += concurrency) {
+            const batch = files.slice(i, i + concurrency);
+            await Promise.all(batch.map(downloadFile));
+        }
+
+        showDlProgress('正在生成ZIP文件...');
+        const zipBlob = await zip.generateAsync({
+            type: 'blob',
+            compression: 'STORE', // 不压缩，速度更快
+            streamFiles: true
+        }, (metadata) => {
+            updateDlProgress(metadata.percent, 100, '生成ZIP中');
+        });
+
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (name || '文件夹') + '.zip';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        hideDlProgress();
+        showToast('下载完成', 'success');
+    } catch (e) {
+        hideDlProgress();
+        showToast(e.message || '打包下载失败', 'error');
+    }
+}
+
+/**
+ * 浏览器端批量打包下载
+ */
+async function batchDownloadBrowserZip() {
+    closeModal('batchDownloadModal');
+    if (selectedItems.size === 0) return;
+
+    try {
+        showDlProgress('正在获取文件列表...');
+
+        // 收集所有文件
+        let allFiles = [];
+        for (const path of selectedItems) {
+            const item = fileItems.find(f => f.path === path);
+            if (item && item.is_dir) {
+                const files = await getFolderFileList(path);
+                allFiles = allFiles.concat(files);
+            } else if (item) {
+                allFiles.push({ path: path, name: item.name });
+            }
+        }
+
+        if (allFiles.length === 0) {
+            hideDlProgress();
+            showToast('没有可下载的文件', 'warning');
+            clearSelection();
+            return;
+        }
+
+        const zip = new JSZip();
+        let downloaded = 0;
+        const total = allFiles.length;
+
+        showDlProgress(`正在下载文件... (0/${total})`);
+
+        // 并行下载文件（最多5个并发）
+        const concurrency = 5;
+        const downloadFile = async (file) => {
+            const response = await fetch(`api.php?action=download&path=${encodeURIComponent(file.path)}`);
+            if (!response.ok) throw new Error(`下载失败: ${file.name}`);
+            const blob = await response.blob();
+            zip.file(file.name, blob);
+            downloaded++;
+            updateDlProgress(downloaded, total, `正在下载 (${downloaded}/${total})`);
+        };
+
+        // 分批并行下载
+        for (let i = 0; i < allFiles.length; i += concurrency) {
+            const batch = allFiles.slice(i, i + concurrency);
+            await Promise.all(batch.map(downloadFile));
+        }
+
+        showDlProgress('正在生成ZIP文件...');
+        const zipBlob = await zip.generateAsync({
+            type: 'blob',
+            compression: 'STORE',
+            streamFiles: true
+        }, (metadata) => {
+            // 只显示百分比和提示词，不显示文件大小
+            updateDlProgress(metadata.percent, 0, '生成ZIP中');
+        });
+
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '批量下载_' + new Date().toISOString().slice(0,19).replace(/[T:]/g,'') + '.zip';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        hideDlProgress();
+        clearSelection();
+        showToast('下载完成', 'success');
+    } catch (e) {
+        hideDlProgress();
+        showToast(e.message || '打包下载失败', 'error');
+    }
+}
+
+async function downloadFolderZip() {
+    closeModal('downloadFolderModal');
+    if (!contextTarget) return;
+    const path = contextTarget.path;
+    const name = path.split('/').pop() || '文件夹';
+
+    // Stream the ZIP straight to the browser download manager: no in-memory
+    // Blob, so folders of any size can be packed.
+    const a = document.createElement('a');
+    a.href = `api.php?action=download_folder&path=${encodeURIComponent(path)}&mode=zip`;
+    a.download = (name || '文件夹') + '.zip';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('已开始打包，请在浏览器下载列表查看', 'success');
+}
+
+async function downloadFolderQueue() {
+    closeModal('downloadFolderModal');
+    if (!contextTarget) return;
+    try {
+        const res = await fetch(`api.php?action=download_folder&path=${encodeURIComponent(contextTarget.path)}&mode=queue`);
+        const data = await res.json();
+        if (!data.success) { showToast(data.message, 'error'); return; }
+        
+        const files = data.data;
+        if (files.length === 0) { showToast('文件夹为空', 'info'); return; }
+        
+        // 使用异步并发下载引擎
+        await asyncBatchDownload(files);
+    } catch(e) {
+        showToast('获取文件列表失败', 'error');
+    }
+}
+
+// ============ Create Folder ============
+let isComposing = false;
+let folderInputInitialized = false;
+
+function openNewFolderModal() {
+    isComposing = false;
+    const input = document.getElementById('newFolderName');
+    input.value = '';
+    openModal('newFolderModal');
+    setTimeout(() => {
+        input.focus();
+        // 只绑定一次 IME 事件
+        if (!folderInputInitialized) {
+            folderInputInitialized = true;
+            input.addEventListener('compositionstart', () => { isComposing = true; });
+            input.addEventListener('compositionend', () => { isComposing = false; });
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !isComposing) {
+                    e.preventDefault();
+                    createFolder();
+                }
+            });
+        }
+    }, 100);
+}
+
+async function createFolder() {
+    const input = document.getElementById('newFolderName');
+    const name = input.value.trim();
+    if (!name) { showToast('请输入文件夹名称', 'error'); input.focus(); return; }
+    
+    try {
+        const res = await fetch('api.php?action=create_folder', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ path: currentPath, name })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('文件夹创建成功', 'success');
+            closeModal('newFolderModal');
+            loadFiles(currentPath);
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch(e) {
+        showToast('创建失败', 'error');
+    }
+}
+
+// ============ Rename ============
+function openRenameModal(path, name) {
+    document.getElementById('renameInput').value = name;
+    contextTarget = { path };
+    openModal('renameModal');
+    setTimeout(() => {
+        const input = document.getElementById('renameInput');
+        input.focus();
+        // Select name without extension
+        const dotIndex = name.lastIndexOf('.');
+        if (dotIndex > 0) {
+            input.setSelectionRange(0, dotIndex);
+        } else {
+            input.select();
+        }
+        // IME + Enter support
+        let composing = false;
+        input.addEventListener('compositionstart', () => { composing = true; });
+        input.addEventListener('compositionend', () => { composing = false; });
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !composing) {
+                e.preventDefault();
+                doRename();
+            }
+        });
+    }, 100);
+}
+
+async function doRename() {
+    const newName = document.getElementById('renameInput').value.trim();
+    if (!newName || !contextTarget) { showToast('名称不能为空', 'error'); return; }
+    
+    try {
+        const res = await fetch('api.php?action=rename', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ path: contextTarget.path, new_name: newName })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('重命名成功', 'success');
+            closeModal('renameModal');
+            loadFiles(currentPath);
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch(e) {
+        showToast('重命名失败', 'error');
+    }
+}
+
+// ============ Delete ============
+async function deleteFile(path) {
+    if (!confirm('确定要删除此文件吗？此操作不可恢复。')) return;
+    
+    try {
+        const res = await fetch('api.php?action=delete', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ path })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('删除成功', 'success');
+            loadFiles(currentPath);
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch(e) {
+        showToast('删除失败', 'error');
+    }
+}
+
+async function batchDelete() {
+    const paths = Array.from(selectedItems);
+    if (!paths.length) return;
+    if (!confirm(`确定要删除选中的 ${paths.length} 个项目吗？此操作不可恢复。`)) return;
+    
+    try {
+        const res = await fetch('api.php?action=batch_delete', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ paths })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(`成功删除 ${data.data.success} 项${data.data.failed > 0 ? `，${data.data.failed} 项失败` : ''}`, 'success');
+            loadFiles(currentPath);
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch(e) {
+        showToast('批量删除失败', 'error');
+    }
+}
+
+// ============ Move ============
+let moveExcludePaths = []; // 要排除的路径（不能移动到这些位置）
+
+// ============ Move (Grid View) ============
+let moveCurrentPath = ''; // 当前浏览的路径
+
+function openMoveModal(path) {
+    moveTarget = '';
+    moveMode = 'single';
+    if (path) contextTarget = { path };
+    moveExcludePaths = [path];
+    moveCurrentPath = '';
+    loadMoveGrid('');
+    openModal('moveModal');
+}
+
+function openBatchMoveModal() {
+    moveMode = 'batch';
+    moveTarget = '';
+    moveExcludePaths = Array.from(selectedItems);
+    moveCurrentPath = '';
+    loadMoveGrid('');
+    openModal('moveModal');
+}
+
+async function loadMoveGrid(path) {
+    moveCurrentPath = path;
+    const grid = document.getElementById('moveGrid');
+    const pathDisplay = document.getElementById('movePath');
+    grid.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px">加载中...</div>';
+
+    // 更新路径显示
+    if (path === '') {
+        pathDisplay.innerHTML = '当前：<span>根目录</span>';
+    } else {
+        pathDisplay.innerHTML = `当前：<span>${escapeHtml(path)}</span>`;
+    }
+
+    try {
+        const res = await fetch(`api.php?action=list&path=${encodeURIComponent(path)}`);
+        const data = await res.json();
+        if (data.success) {
+            const dirs = data.data.items.filter(i => i.is_dir);
+            grid.innerHTML = '';
+
+            // 添加上级目录按钮
+            if (path !== '') {
+                const parentPath = getParentPath(path);
+                const parentItem = document.createElement('div');
+                parentItem.className = 'move-folder';
+                parentItem.dataset.path = '__parent__';
+                parentItem.innerHTML = `
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg>
+                    <span>上级目录</span>
+                `;
+                parentItem.onclick = () => loadMoveGrid(parentPath);
+                grid.appendChild(parentItem);
+            }
+
+            // 添加当前目录（可选择）
+            if (path !== '') {
+                const currentItem = document.createElement('div');
+                currentItem.className = 'move-folder' + (moveTarget === path ? ' active' : '');
+                currentItem.dataset.path = path;
+                currentItem.innerHTML = `
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--primary)" stroke="var(--primary)" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    <span>${escapeHtml(path.split('/').pop())}</span>
+                `;
+                currentItem.onclick = () => selectMoveTarget(path);
+                grid.appendChild(currentItem);
+            }
+
+            // 添加子文件夹
+            dirs.forEach(d => {
+                const shouldExclude = moveExcludePaths.some(p => 
+                    d.path === p || d.path.startsWith(p + '/')
+                );
+                if (shouldExclude) return;
+
+                const item = document.createElement('div');
+                item.className = 'move-folder' + (moveTarget === d.path ? ' active' : '');
+                item.dataset.path = d.path;
+                item.innerHTML = `
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    <span>${escapeHtml(d.name)}</span>
+                `;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    loadMoveGrid(d.path);
+                };
+                grid.appendChild(item);
+            });
+
+            if (dirs.length === 0 && path === '') {
+                grid.innerHTML = '<div style="text-align:center;color:var(--text-light);padding:40px">根目录下没有文件夹</div>';
+            }
+        }
+    } catch(e) {
+        grid.innerHTML = '<div style="text-align:center;color:var(--error);padding:40px">加载失败</div>';
+    }
+}
+
+function getParentPath(path) {
+    if (!path) return '';
+    const parts = path.split('/');
+    parts.pop();
+    return parts.join('/');
+}
+
+function selectMoveTarget(path) {
+    moveTarget = path;
+    document.querySelectorAll('.move-folder').forEach(el => {
+        el.classList.toggle('active', el.dataset.path === path);
+    });
+}
+
+async function doMove() {
+    try {
+        const paths = moveMode === 'batch' ? Array.from(selectedItems) : [contextTarget?.path];
+        if (!paths.length) return;
+
+        // 直接使用当前浏览的路径作为目标（用户打开哪个文件夹就移动到哪）
+        const target = moveCurrentPath;
+
+        const url = moveMode === 'batch' ? 'api.php?action=batch_move' : 'api.php?action=move';
+        const body = moveMode === 'batch' 
+            ? { paths, target: target }
+            : { source: paths[0], target: target };
+
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('移动成功', 'success');
+            closeModal('moveModal');
+            loadFiles(currentPath);
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch(e) {
+        showToast('移动失败', 'error');
+    }
+}
+
+// ============ Batch Download ============
+// 批量下载 - 弹出选择弹窗
+function batchDownload() {
+    const paths = Array.from(selectedItems);
+    if (!paths.length) return;
+
+    // 如果只选了1个文件，直接下载
+    if (paths.length === 1) {
+        const item = fileItems.find(f => f.path === paths[0]);
+        if (item && !item.is_dir) {
+            window.location.href = `api.php?action=download&path=${encodeURIComponent(paths[0])}`;
+            clearSelection();
+            return;
+        }
+    }
+
+    // 多选时弹出选择弹窗
+    document.getElementById('batchDlCount').textContent = paths.length;
+    openModal('batchDownloadModal');
+}
+
+// 批量下载 - 打包ZIP
+async function batchDownloadZip() {
+    closeModal('batchDownloadModal');
+    const paths = Array.from(selectedItems);
+    if (!paths.length) return;
+
+    // Hidden form POST: the ZIP response streams to disk instead of being
+    // accumulated in a Blob, so the selection can be arbitrarily large.
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'api.php?action=batch_download_zip';
+    form.target = '_blank';
+    form.style.display = 'none';
+    const field = document.createElement('input');
+    field.type = 'hidden';
+    field.name = '_json';
+    field.value = JSON.stringify({ paths });
+    form.appendChild(field);
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+    clearSelection();
+    showToast('已开始打包，请在浏览器下载列表查看', 'success');
+}
+
+// 批量下载 - 异步并发逐文件下载（全异步模式）
+async function batchDownloadQueue() {
+    closeModal('batchDownloadModal');
+    const paths = Array.from(selectedItems);
+    if (!paths.length) return;
+
+    try {
+        // 获取所有文件列表（支持文件夹递归）
+        const res = await fetch('api.php?action=batch_download', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ paths })
+        });
+        const data = await res.json();
+        if (!data.success) { showToast(data.message, 'error'); return; }
+
+        const files = data.data;
+        if (files.length === 0) { showToast('没有可下载的文件', 'info'); return; }
+
+        // 使用异步并发下载引擎
+        await asyncBatchDownload(files);
+        clearSelection();
+    } catch(e) {
+        showToast('下载失败', 'error');
+    }
+}
+
+// ============ 异步并发下载引擎 ============
+let batchAbortController = null;
+
+// 取消所有正在进行的批量下载
+function cancelBatchDownload() {
+    if (batchAbortController) {
+        batchAbortController.abort();
+        batchAbortController = null;
+    }
+    hideBatchProgress();
+    showToast('已取消下载', 'warning');
+}
+
+/**
+ * 全异步并发分块下载引擎
+ * - 多个文件同时下载，每文件通过 ReadableStream 分块读取
+ * - 受控并发数，避免浏览器连接数耗尽
+ * - 每个文件下载完成后立即通过 Blob URL 触发浏览器保存
+ * - 实时显示每个文件的下载进度
+ * 
+ * @param {Array} files - [{path, name}, ...]
+ */
+async function asyncBatchDownload(files) {
+    if (!files || files.length === 0) return;
+    
+    // 并发控制
+    const MAX_CONCURRENT = 6;
+    const LARGE_FILE_BYTES = 256 * 1024 * 1024; // above this, stream to disk
+    const CHUNK_SIZE = 1024 * 256; // 256KB 分块
+    
+    // 状态追踪
+    const fileStates = files.map((f, i) => ({
+        ...f,
+        index: i,
+        status: 'pending',   // pending | downloading | done | error
+        loaded: 0,
+        total: f.size || 0,
+        errorMsg: ''
+    }));
+    
+    let completedCount = 0;
+    let errorCount = 0;
+    const totalFiles = files.length;
+    let totalBytes = 0;
+    let downloadedBytes = 0;
+    let startTime = Date.now();
+    
+    // 创建 AbortController
+    batchAbortController = new AbortController();
+    const signal = batchAbortController.signal;
+    
+    // 显示批量进度面板
+    showBatchProgress(files);
+    
+    // 更新面板中每个文件的状态（初始化）
+    renderBatchItems(fileStates);
+    
+    /**
+     * 下载单个文件：小文件分块读取并显示进度，大文件交给浏览器直接流式落盘，
+     * 避免把整份文件攒在内存里（因此不再受浏览器内存限制）。
+     */
+    const downloadOne = async (fileState) => {
+        if (signal.aborted) return;
+        
+        fileState.status = 'downloading';
+        renderBatchItem(fileState);
+
+        const downloadUrl = `api.php?action=download&path=${encodeURIComponent(fileState.path)}`;
+        const directDownload = () => {
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = fileState.name || '';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            fileState.status = 'done';
+            fileState.loaded = fileState.total || 1;
+            completedCount++;
+            updateBatchProgress(fileStates, completedCount, errorCount, totalFiles, startTime);
+            renderBatchItem(fileState);
+        };
+        
+        try {
+            if (fileState.total > LARGE_FILE_BYTES) {
+                directDownload();
+                return;
+            }
+
+            const response = await fetch(downloadUrl, { signal });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const contentLength = parseInt(response.headers.get('Content-Length') || '0', 10);
+            fileState.total = contentLength || fileState.total;
+            if (contentLength > LARGE_FILE_BYTES) {
+                if (response.body && response.body.cancel) response.body.cancel().catch(() => {});
+                directDownload();
+                return;
+            }
+            
+            const reader = response.body.getReader();
+            const chunks = [];
+            let received = 0;
+            
+            // 分块读取（驱动模式：持续读取直到完成）
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                chunks.push(value);
+                received += value.length;
+                fileState.loaded = received;
+                downloadedBytes += value.length;
+                
+                // 实时更新进度
+                updateBatchProgress(fileStates, completedCount, errorCount, totalFiles, startTime);
+                renderBatchItem(fileState);
+            }
+            
+            // 收集完成，创建 Blob 并触发下载
+            const blob = new Blob(chunks);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileState.name;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // 延迟清理 Blob URL（给浏览器保存留时间）
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+            
+            fileState.status = 'done';
+            fileState.loaded = fileState.total;
+            completedCount++;
+            
+        } catch (e) {
+            if (e.name === 'AbortError') {
+                fileState.status = 'error';
+                fileState.errorMsg = '已取消';
+            } else {
+                fileState.status = 'error';
+                fileState.errorMsg = e.message || '下载失败';
+                errorCount++;
+                console.error(`下载失败: ${fileState.name}`, e);
+            }
+        }
+        
+        updateBatchProgress(fileStates, completedCount, errorCount, totalFiles, startTime);
+        renderBatchItem(fileState);
+    };
+    
+    // 受控并发：分批启动，每批最多 MAX_CONCURRENT 个
+    for (let i = 0; i < files.length; i += MAX_CONCURRENT) {
+        if (signal.aborted) break;
+        const batch = fileStates.slice(i, i + MAX_CONCURRENT);
+        await Promise.all(batch.map(fs => downloadOne(fs)));
+    }
+    
+    // 清理
+    batchAbortController = null;
+    
+    // 延迟隐藏面板
+    setTimeout(() => {
+        if (!batchAbortController) {
+            hideBatchProgress();
+            const successCount = completedCount - errorCount;
+            if (errorCount > 0 && successCount > 0) {
+                showToast(`下载完成：${successCount} 个成功，${errorCount} 个失败`, 'warning');
+            } else if (errorCount > 0) {
+                showToast(`下载失败：${errorCount} 个文件出错`, 'error');
+            } else {
+                showToast('全部下载完成', 'success');
+            }
+        }
+    }, 1500);
+}
+
+// ============ 批量进度面板控制 ============
+function showBatchProgress(files) {
+    const panel = document.getElementById('dlBatchPanel');
+    document.getElementById('dlBatchTitle').textContent = `批量下载 ${files.length} 个文件`;
+    document.getElementById('dlBatchSummary').textContent = `0 / ${files.length} 个文件`;
+    document.getElementById('dlBatchSpeed').textContent = '';
+    document.getElementById('dlBatchFill').style.width = '0%';
+    panel.classList.add('show');
+}
+
+function updateBatchProgress(fileStates, completed, errors, total, startTime) {
+    const allDone = completed + errors;
+    const pct = total > 0 ? Math.round((allDone / total) * 100) : 0;
+    document.getElementById('dlBatchFill').style.width = pct + '%';
+    document.getElementById('dlBatchSummary').textContent = `${allDone} / ${total} 个文件`;
+    
+    // 计算速度
+    const elapsed = (Date.now() - startTime) / 1000;
+    if (elapsed > 0.5) {
+        let totalDL = 0;
+        fileStates.forEach(fs => { totalDL += fs.loaded; });
+        const speed = totalDL / elapsed;
+        document.getElementById('dlBatchSpeed').textContent = formatSize(speed) + '/s';
+    }
+}
+
+function hideBatchProgress() {
+    document.getElementById('dlBatchPanel').classList.remove('show');
+    document.getElementById('dlBatchList').innerHTML = '';
+}
+
+function renderBatchItems(fileStates) {
+    const list = document.getElementById('dlBatchList');
+    list.innerHTML = fileStates.map(fs => renderBatchItemHTML(fs)).join('');
+}
+
+function renderBatchItem(fileState) {
+    const el = document.getElementById('dl-batch-item-' + fileState.index);
+    if (el) {
+        el.outerHTML = renderBatchItemHTML(fileState);
+    }
+}
+
+function renderBatchItemHTML(fs) {
+    const pct = fs.total > 0 ? Math.round((fs.loaded / fs.total) * 100) : (fs.status === 'done' ? 100 : 0);
+    let statusText = '';
+    let statusClass = '';
+    switch (fs.status) {
+        case 'pending': statusText = '等待中'; statusClass = 'pending'; break;
+        case 'downloading': statusText = pct + '%'; statusClass = 'downloading'; break;
+        case 'done': statusText = '完成'; statusClass = 'done'; break;
+        case 'error': statusText = fs.errorMsg || '失败'; statusClass = 'error'; break;
+    }
+    const barWidth = fs.status === 'downloading' ? pct + '%' : (fs.status === 'done' ? '100%' : '0%');
+    
+    return `<div class="dl-batch-item" id="dl-batch-item-${fs.index}">
+        <span class="dl-batch-name" title="${escapeHtml(fs.name)}">${escapeHtml(fs.name)}</span>
+        <div class="dl-batch-bar-wrap"><div class="fill" style="width:${barWidth}"></div></div>
+        <span class="dl-batch-status ${statusClass}">${statusText}</span>
+    </div>`;
+}
+
+// ============ Upload ============
+let uploadQueue = []; // 存储待上传的文件对象
+let uploadAbortController = null; // 用于中断上传
+
+/**
+ * 递归读取拖拽的 DataTransferItem（支持文件夹）
+ * 返回 File 数组，每个 File 的 webkitRelativePath 包含完整相对路径
+ */
+function readAllEntries(dataTransferItems) {
+    return new Promise((resolve) => {
+        const allFiles = [];
+        let pending = 0;
+
+        function traverseEntry(entry, path) {
+            pending++;
+            if (entry.isFile) {
+                entry.file(file => {
+                    // 给 file 对象附加 webkitRelativePath 信息
+                    Object.defineProperty(file, 'webkitRelativePath', {
+                        value: path ? path + '/' + file.name : file.name,
+                        writable: false
+                    });
+                    allFiles.push(file);
+                    pending--;
+                    if (pending === 0) resolve(allFiles);
+                }, () => {
+                    // 读取失败，跳过
+                    pending--;
+                    if (pending === 0) resolve(allFiles);
+                });
+            } else if (entry.isDirectory) {
+                const dirReader = entry.createReader();
+                function readEntries() {
+                    dirReader.readEntries(entries => {
+                        if (entries.length === 0) {
+                            // 该目录读取完毕
+                            pending--;
+                            if (pending === 0) resolve(allFiles);
+                        } else {
+                            entries.forEach(subEntry => {
+                                traverseEntry(subEntry, path ? path + '/' + entry.name : entry.name);
+                            });
+                            // readEntries 每次最多返回 100 条，需继续读取
+                            readEntries();
+                        }
+                    }, () => {
+                        // 读取失败
+                        pending--;
+                        if (pending === 0) resolve(allFiles);
+                    });
+                }
+                readEntries();
+            } else {
+                pending--;
+                if (pending === 0) resolve(allFiles);
+            }
+        }
+
+        for (let i = 0; i < dataTransferItems.length; i++) {
+            const entry = dataTransferItems[i].webkitGetAsEntry();
+            if (entry) {
+                traverseEntry(entry, '');
+            }
+        }
+
+        // 如果没有任何有效的 entry
+        if (pending === 0) resolve(allFiles);
+    });
+}
+
+function openUploadModal() {
+    uploadQueue = [];
+    document.getElementById('uploadList').innerHTML = '';
+    updateUploadFooter(true);
+    const btn = document.getElementById('startUploadBtn');
+    btn.disabled = false;
+    btn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        开始上传 (<span id="uploadCount">0</span> 个文件)
+    `;
+    openModal('uploadModal');
+}
+
+// Keep the footer button visible whenever the queue has work. The upload
+// button used to disappear with large selections because batch rendering was
+// deferred with requestAnimationFrame while the footer was toggled early.
+function updateUploadFooter(force = false) {
+    const footer = document.getElementById('uploadFooter');
+    if (footer) {
+        footer.style.display = (uploadQueue.length > 0 || (uploadAbortController && !force)) ? 'flex' : 'none';
+    }
+    const count = document.getElementById('uploadCount');
+    if (count) count.textContent = uploadQueue.length;
+    const btn = document.getElementById('startUploadBtn');
+    if (btn && !uploadAbortController) btn.disabled = false;
+}
+
+function addToUploadQueue(files) {
+    if (!files || !files.length) return;
+
+    const newFiles = Array.from(files).filter(file => {
+        if (file.name.startsWith('.')) return false;
+        // Folder queue entries have no .file; compare against their flattened files.
+        return !uploadQueue.find(f => {
+            const candidates = f._isFolder ? (f._folderFiles || []) : [f.file];
+            return candidates.some(x => x && x.name === file.name && x.size === file.size && x.lastModified === file.lastModified);
+        });
+    });
+
+    if (newFiles.length === 0) {
+        updateUploadFooter();
+        return;
+    }
+
+    // 检测是否为文件夹上传（webkitRelativePath 不为空）
+    const firstRelPath = newFiles[0].webkitRelativePath || '';
+    const isFolderUpload = firstRelPath.includes('/');
+
+    if (isFolderUpload) {
+        const folderName = firstRelPath.split('/')[0];
+        if (uploadQueue.find(f => f._folderName && f._folderName === folderName)) {
+            updateUploadFooter();
+            return;
+        }
+        const totalSize = newFiles.reduce((s, f) => s + f.size, 0);
+        const itemId = 'upload_' + Date.now() + '_folder_' + Math.random().toString(36).substr(2, 6);
+        uploadQueue.push({ id: itemId, _folderName: folderName, _folderFiles: newFiles, _isFolder: true });
+        document.getElementById('uploadList').insertAdjacentHTML('beforeend', `
+            <div class="upload-item" id="${itemId}">
+                <div class="info">
+                    <div class="name" title="文件夹：${escapeHtml(folderName)}">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1.5" style="vertical-align:middle;margin-right:6px;flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                        ${escapeHtml(folderName)}
+                    </div>
+                    <div class="meta">${newFiles.length} 个文件 · 共 ${formatSize(totalSize)} · 等待上传</div>
+                    <div class="progress-bar"><div class="fill" style="width:0%"></div></div>
+                </div>
+                <div class="status">
+                    <button onclick="removeFromQueue('${itemId}')" style="border:none;background:none;cursor:pointer;color:var(--text-light);font-size:18px;line-height:1" title="移除">×</button>
+                </div>
+            </div>
+        `);
+    } else {
+        // Add every file to the queue synchronously, then render only a
+        // bounded number of rows. Thousands of files no longer block the UI
+        // or delay the upload button.
+        const MAX_ROWS = 120;
+        const items = newFiles.map(file => ({
+            id: 'upload_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8) + '_' + uploadQueue.length,
+            file
+        }));
+        uploadQueue.push(...items);
+        const list = document.getElementById('uploadList');
+        const shown = items.slice(0, MAX_ROWS);
+        const html = shown.map(item => `
+            <div class="upload-item" id="${item.id}">
+                <div class="info">
+                    <div class="name" title="${escapeHtml(item.file.webkitRelativePath || item.file.name)}">${escapeHtml(item.file.name)}</div>
+                    <div class="meta">${formatSize(item.file.size)} · 等待上传</div>
+                    <div class="progress-bar"><div class="fill" style="width:0%"></div></div>
+                </div>
+                <div class="status">
+                    <button onclick="removeFromQueue('${item.id}')" style="border:none;background:none;cursor:pointer;color:var(--text-light);font-size:18px;line-height:1" title="移除">×</button>
+                </div>
+            </div>
+        `).join('');
+        list.insertAdjacentHTML('beforeend', html + (items.length > MAX_ROWS
+            ? `<div class="upload-item" style="color:var(--text-secondary);font-size:12px">仅显示前 ${MAX_ROWS} 个文件，其余 ${items.length - MAX_ROWS} 个已加入队列</div>` : ''));
+    }
+    updateUploadFooter();
+}
+
+function removeFromQueue(itemId) {
+    uploadQueue = uploadQueue.filter(f => f.id !== itemId);
+    const el = document.getElementById(itemId);
+    if (el) el.remove();
+    updateUploadFooter();
+}
+
+function clearUploadQueue() {
+    uploadQueue = [];
+    document.getElementById('uploadList').innerHTML = '';
+    updateUploadFooter(true);
+}
+
+async function startUpload() {
+    if (uploadQueue.length === 0) return;
+
+    const items = [...uploadQueue];
+    uploadQueue = []; // 清空队列，防止重复上传
+    document.getElementById('startUploadBtn').disabled = true;
+    document.getElementById('startUploadBtn').textContent = '上传中...';
+
+    // 创建 AbortController，关闭窗口时可中断上传
+    uploadAbortController = new AbortController();
+
+    // Upload several files in parallel. Folder uploads are expanded into the
+    // same task pool so a large tree also benefits from the extra connections.
+    const MAX_PARALLEL_UPLOADS = 4;
+    const tasks = [];
+    const folderStats = new Map();
+
+    const renderFolderRow = (stat, aborted) => {
+        const el = document.getElementById(stat.item.id);
+        if (!el) return;
+        const metaEl = el.querySelector('.meta');
+        const fillEl = el.querySelector('.fill');
+        const statusEl = el.querySelector('.status');
+        const pct = stat.totalSize > 0
+            ? Math.round((stat.uploaded / stat.totalSize) * 100)
+            : (stat.totalFiles > 0 ? Math.round((stat.completed / stat.totalFiles) * 100) : 100);
+        fillEl.style.width = Math.min(100, pct) + '%';
+        if (aborted && stat.completed < stat.totalFiles) {
+            statusEl.textContent = '已取消';
+            statusEl.className = 'status error';
+            metaEl.textContent = `${stat.completed}/${stat.totalFiles} 个文件 · 已取消`;
+        } else if (stat.completed >= stat.totalFiles) {
+            fillEl.style.width = '100%';
+            statusEl.textContent = '已完成';
+            statusEl.className = 'status success';
+            metaEl.textContent = `${stat.totalFiles} 个文件 · 共 ${formatSize(stat.totalSize)} · 上传完成`;
+        } else {
+            statusEl.textContent = '上传中';
+            metaEl.textContent = `${stat.completed}/${stat.totalFiles} 个文件 · ${pct}% · ${formatSize(stat.uploaded)}/${formatSize(stat.totalSize)}`;
+        }
+    };
+
+    for (const item of items) {
+        if (item._isFolder) {
+            const files = item._folderFiles || [];
+            const stat = {
+                item,
+                totalFiles: files.length,
+                totalSize: files.reduce((s, f) => s + f.size, 0),
+                completed: 0,
+                uploaded: 0
+            };
+            folderStats.set(item.id, stat);
+            files.forEach((file, idx) => {
+                tasks.push({ file, itemId: item.id + '_' + idx, stat });
+            });
+            if (!files.length) renderFolderRow(stat, false);
+        } else {
+            tasks.push({ file: item.file, itemId: item.id, single: item });
+        }
+    }
+
+    try {
+        let next = 0;
+        const worker = async () => {
+            while (next < tasks.length && !uploadAbortController.signal.aborted) {
+                const task = tasks[next++];
+                const result = await uploadFile(
+                    { file: task.file }, task.itemId, uploadAbortController.signal, !!task.stat);
+                if (task.stat) {
+                    if (result !== 'abort') {
+                        task.stat.completed++;
+                        task.stat.uploaded += task.file.size;
+                    }
+                    renderFolderRow(task.stat, uploadAbortController.signal.aborted);
+                }
+            }
+        };
+        const workers = Array.from(
+            { length: Math.min(MAX_PARALLEL_UPLOADS, tasks.length) }, () => worker());
+        await Promise.all(workers);
+        folderStats.forEach(stat => renderFolderRow(stat, uploadAbortController.signal.aborted));
+    } catch(e) {
+        if (e.name !== 'AbortError') {
+            console.error('Upload error:', e);
+        }
+    }
+
+    uploadAbortController = null;
+    updateUploadFooter(true);
+
+    // 所有文件上传完毕，刷新一次文件列表
+    document.getElementById('startUploadBtn').disabled = false;
+    document.getElementById('startUploadBtn').innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        开始上传 (<span id="uploadCount">0</span> 个文件)
+    `;
+    // 所有文件上传完成后只刷新一次文件列表，避免频繁刷新闪烁
+    loadFiles(currentPath);
+}
+
+// 解析 API 响应：后端出错时会返回 HTML 错误页（如 <br /><b>Fatal error</b>...），
+// 直接 .json() 只会得到 "Unexpected token '<'" 这种无意义提示。这里提取出真正的错误文字。
+async function parseApiJson(res) {
+    const text = await res.text();
+    try {
+        return JSON.parse(text);
+    } catch (_) {
+        let msg = text;
+        // 去掉常见 HTML 标签，保留 PHP 错误正文
+        msg = msg.replace(/<br\s*\/?>/gi, '\n')
+                 .replace(/<\/?(b|strong|i|em|div|span|p|h\d|pre|code)[^>]*>/gi, '')
+                 .replace(/<[^>]*>/g, '')
+                 .replace(/&nbsp;/g, ' ')
+                 .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+        msg = msg.replace(/\n{2,}/g, '\n').trim();
+        if (!msg) msg = 'HTTP ' + res.status + ' 服务端返回异常';
+        throw new Error('服务端错误：' + msg.slice(0, 400));
+    }
+}
+
+// Streaming upload: send the whole File as the body of a single request.
+// The server reads php://input block by block and writes directly to disk.
+// No chunks, no merge, no resume. upload.onprogress reports real progress.
+function uploadFile(item, itemId, signal, skipUI = false) {
+    const el = skipUI ? null : document.getElementById(itemId);
+    if (!skipUI && !el) return Promise.resolve('error');
+    const metaEl = skipUI ? null : el.querySelector('.meta');
+    const fillEl = skipUI ? null : el.querySelector('.fill');
+    const statusEl = skipUI ? null : el.querySelector('.status');
+
+    return new Promise(resolve => {
+        const file = item.file;
+        const totalSize = file.size;
+
+        // Resolve target directory (folder uploads: append the webkitRelativePath dir part).
+        const relativePath = file.webkitRelativePath || '';
+        let dirPath;
+        if (relativePath) {
+            const folderRelDir = relativePath.substring(0, relativePath.lastIndexOf('/'));
+            dirPath = currentPath ? currentPath + '/' + folderRelDir : folderRelDir;
+        } else {
+            dirPath = currentPath;
+        }
+
+        const url = 'api.php?action=upload_stream'
+            + '&path=' + encodeURIComponent(dirPath)
+            + '&name=' + encodeURIComponent(file.name)
+            + '&size=' + totalSize;
+
+        let finished = false;
+        let xhr = null;
+        let lastBytes = 0;
+        let lastTime = Date.now();
+
+        const finish = result => {
+            if (finished) return;
+            finished = true;
+            signal.removeEventListener('abort', onAbort);
+            resolve(result);
+        };
+        const onAbort = () => {
+            if (finished) return;
+            if (statusEl) { statusEl.textContent = '已取消'; statusEl.className = 'status error'; }
+            if (metaEl) metaEl.textContent = '上传已取消';
+            finish('abort');
+            if (xhr) { try { xhr.abort(); } catch (_) {} }
+        };
+        signal.addEventListener('abort', onAbort, { once: true });
+
+        const render = loaded => {
+            const bytes = Math.min(loaded, totalSize);
+            const pct = totalSize > 0 ? Math.round((bytes / totalSize) * 100) : 0;
+            if (fillEl) fillEl.style.width = pct + '%';
+            const now = Date.now();
+            const dt = (now - lastTime) / 1000;
+            if (dt > 0) {
+                const speed = Math.max(0, (bytes - lastBytes) / dt);
+                lastBytes = bytes;
+                lastTime = now;
+                if (metaEl) {
+                    metaEl.textContent = `${pct}% · ${formatSize(speed)}/s · ${formatSize(bytes)}/${formatSize(totalSize)}`;
+                }
+            }
+        };
+
+        // Extract a readable message even when the server returned a PHP HTML error page.
+        const parseResponse = text => {
+            try { return JSON.parse(text); } catch (_) {}
+            const msg = String(text || '')
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/?(b|strong|i|em|div|span|p|h\d|pre|code)[^>]*>/gi, '')
+                .replace(/<[^>]*>/g, '')
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
+                .replace(/\n{2,}/g, '\n').trim();
+            return { success: false, message: msg.slice(0, 400) || '服务端返回异常' };
+        };
+
+        if (signal.aborted) { onAbort(); return; }
+        if (statusEl) { statusEl.textContent = '上传中'; statusEl.className = 'status'; }
+        lastTime = Date.now();
+        lastBytes = 0;
+
+        // 浏览器把全部字节发出（进度100%）后，服务端仍需接收落盘并校验大小。
+        // 这里只显示"保存中"，绝不提前判定成功：必须等服务端返回真实成功 JSON，
+        // 否则会出现"显示上传成功但文件根本没落盘"的假成功（大文件尤其明显）。
+        let uploadDone = false;
+        const markAllSent = () => {
+            if (uploadDone || finished) return;
+            uploadDone = true;
+            if (fillEl) fillEl.style.width = '100%';
+            if (statusEl) { statusEl.textContent = '保存中…'; statusEl.className = 'status'; }
+            if (metaEl) metaEl.textContent = `100% · ${formatSize(totalSize)} · 正在保存`;
+        };
+        const confirmSaved = () => {
+            if (fillEl) fillEl.style.width = '100%';
+            if (metaEl) metaEl.textContent = `${formatSize(totalSize)} · 上传完成`;
+            if (statusEl) { statusEl.textContent = '已完成'; statusEl.className = 'status success'; }
+            finish('success');
+        };
+
+        xhr = new XMLHttpRequest();
+        xhr.open('POST', url, true);
+        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+        xhr.upload.onprogress = e => {
+            if (!e.lengthComputable) return;
+            render(e.loaded);
+            if (e.loaded >= e.total) markAllSent();
+        };
+        // loadend 在请求彻底结束（成功/失败/超时）时触发，比 onprogress 更可靠地确认"数据已全部送达"。
+        xhr.upload.onload = () => { markAllSent(); };
+        xhr.onload = () => {
+            if (finished) return;
+            const data = parseResponse(xhr.responseText);
+            if (xhr.status >= 200 && xhr.status < 300 && data && data.success) {
+                confirmSaved();
+            } else {
+                if (statusEl) { statusEl.textContent = '失败'; statusEl.className = 'status error'; }
+                if (metaEl) metaEl.textContent = '服务端错误：' + ((data && data.message) || ('HTTP ' + xhr.status));
+                finish('error');
+            }
+        };
+        // 服务端确认超时（大文件落盘/校验过慢或连接中断）：明确报错，绝不假成功
+        xhr.ontimeout = () => {
+            if (finished) return;
+            if (statusEl) { statusEl.textContent = '失败'; statusEl.className = 'status error'; }
+            if (metaEl) metaEl.textContent = '服务端响应超时，文件可能未保存，请重试';
+            finish('error');
+        };
+        xhr.onerror = () => {
+            if (finished) return;
+            if (statusEl) { statusEl.textContent = '失败'; statusEl.className = 'status error'; }
+            if (metaEl) metaEl.textContent = '网络错误，上传失败';
+            finish('error');
+        };
+        xhr.onabort = () => {
+            if (finished) return;
+            if (statusEl) { statusEl.textContent = '已取消'; statusEl.className = 'status error'; }
+            if (metaEl) metaEl.textContent = '上传已取消';
+            finish('abort');
+        };
+        try {
+            xhr.send(file);
+        } catch (e) {
+            if (statusEl) { statusEl.textContent = '失败'; statusEl.className = 'status error'; }
+            if (metaEl) metaEl.textContent = e.message;
+            finish('error');
+        }
+    });
+}
+
+// ============ Share ============
+function openShareModal(path, name) {
+    contextTarget = { path, name };
+    document.getElementById('shareFileName').value = name || path;
+    document.getElementById('sharePassword').value = '';
+    document.getElementById('shareExpire').value = '0';
+    document.getElementById('shareMaxDownloads').value = '0';
+    document.getElementById('shareResult').style.display = 'none';
+    document.getElementById('shareBtn').style.display = '';
+    openModal('shareModal');
+}
+
+async function doShare() {
+    if (!contextTarget) return;
+
+    try {
+        const res = await fetch('api.php?action=share', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                path: contextTarget.path,
+                password: document.getElementById('sharePassword').value,
+                expire_days: parseInt(document.getElementById('shareExpire').value),
+                max_downloads: parseInt(document.getElementById('shareMaxDownloads').value) || 0
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            // 前端动态生成分享链接，适配当前访问域名
+            const shareUrl = window.location.origin + '/share.html?id=' + data.data.id;
+            document.getElementById('shareUrl').value = shareUrl;
+            // 根据当前域名生成二维码，手机扫码即可打开并下载
+            document.getElementById('shareQrImg').src = makeQRDataURL(shareUrl);
+            document.getElementById('shareResult').style.display = 'block';
+            document.getElementById('shareBtn').style.display = 'none';
+            showToast('分享创建成功', 'success');
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch(e) {
+        showToast('创建分享失败', 'error');
+    }
+}
+
+function copyShareUrl() {
+    const url = document.getElementById('shareUrl').value;
+    navigator.clipboard.writeText(url).then(() => {
+        showToast('链接已复制到剪贴板', 'success');
+    }).catch(() => {
+        // Fallback
+        const input = document.getElementById('shareUrl');
+        input.select();
+        document.execCommand('copy');
+        showToast('链接已复制', 'success');
+    });
+}
+
+// ============ Direct Link ============
+function openDirectLinkModal(path, name) {
+    contextTarget = { path, name };
+    document.getElementById('directLinkFileName').value = name || path;
+    document.getElementById('directLinkResult').style.display = 'none';
+    document.getElementById('directLinkGenerating').style.display = 'none';
+    document.getElementById('directLinkBtn').style.display = '';
+    openModal('directLinkModal');
+}
+
+async function doGenerateDirectLink() {
+    if (!contextTarget) return;
+    document.getElementById('directLinkBtn').style.display = 'none';
+    document.getElementById('directLinkGenerating').style.display = 'block';
+    try {
+        const res = await fetch('api.php?action=direct_link', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ path: contextTarget.path })
+        });
+        const data = await res.json();
+        document.getElementById('directLinkGenerating').style.display = 'none';
+        if (data.success) {
+            // 使用当前域名拼接下载直链
+            const origin = window.location.origin;
+            const base = window.location.pathname.replace(/\/[^\/]*$/, '');
+            const dlUrl = origin + base + '/api.php?action=download_share&id=' + data.data.id;
+            document.getElementById('directLinkUrl').value = dlUrl;
+            // 根据当前域名生成二维码，手机扫码即可直接下载
+            document.getElementById('directLinkQrImg').src = makeQRDataURL(dlUrl);
+            document.getElementById('directLinkResult').style.display = 'block';
+            showToast('直链生成成功', 'success');
+        } else {
+            document.getElementById('directLinkBtn').style.display = '';
+            showToast(data.message || '生成直链失败', 'error');
+        }
+    } catch(e) {
+        document.getElementById('directLinkGenerating').style.display = 'none';
+        document.getElementById('directLinkBtn').style.display = '';
+        showToast('生成直链失败', 'error');
+    }
+}
+
+function copyDirectLink() {
+    const url = document.getElementById('directLinkUrl').value;
+    navigator.clipboard.writeText(url).then(() => {
+        showToast('直链已复制到剪贴板', 'success');
+    }).catch(() => {
+        const input = document.getElementById('directLinkUrl');
+        input.select();
+        document.execCommand('copy');
+        showToast('直链已复制', 'success');
+    });
+}
+
+// ============ 二维码（根据当前域名生成，手机扫码下载） ============
+// 纯前端本地生成，不依赖任何外部接口，分享链接不会外泄
+function makeQRDataURL(text) {
+    try {
+        const qr = qrcode(0, 'M'); // 0 = 自动选择版本
+        qr.addData(text);
+        qr.make();
+        return qr.createDataURL(8, 8);
+    } catch (e) {
+        console.error('二维码生成失败', e);
+        return '';
+    }
+}
+
+function showQR(url) {
+    const img = document.getElementById('qrModalImg');
+    if (img) img.src = makeQRDataURL(url);
+    const urlEl = document.getElementById('qrModalUrl');
+    if (urlEl) urlEl.textContent = url;
+    openModal('qrModal');
+}
+
+let sharePage = 0;
+let shareHasMore = false;
+let shareTotal = 0;
+let shareLoading = false;
+
+async function showShares() {
+    sharePage = 0;
+    shareHasMore = false;
+    shareTotal = 0;
+    openModal('shareListModal');
+    const body = document.getElementById('shareListBody');
+    body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+    // 绑定滚动事件（只绑一次）
+    body.onscroll = null;
+    body.onscroll = function() {
+        if (shareLoading || !shareHasMore) return;
+        if (body.scrollTop + body.clientHeight >= body.scrollHeight - 50) {
+            loadMoreShares();
+        }
+    };
+
+    await loadMoreShares();
+}
+
+async function loadMoreShares() {
+    if (shareLoading) return;
+    shareLoading = true;
+    sharePage++;
+
+    const body = document.getElementById('shareListBody');
+    const isFirst = sharePage === 1;
+
+    if (!isFirst) {
+        // 移除旧的加载提示
+        const oldLoader = body.querySelector('.share-load-more');
+        if (oldLoader) oldLoader.remove();
+        body.insertAdjacentHTML('beforeend', '<div class="share-load-more"><div class="spinner"></div></div>');
+    }
+
+    try {
+        const res = await fetch(`api.php?action=list_shares&page=${sharePage}`);
+        const data = await res.json();
+        if (!data.success) {
+            if (isFirst) body.innerHTML = '<p>加载失败</p>';
+            shareLoading = false;
+            return;
+        }
+
+        shareTotal = data.total;
+        shareHasMore = data.has_more;
+
+        // 移除 loading spinner
+        if (isFirst) {
+            body.innerHTML = '';
+        }
+        const oldLoader = body.querySelector('.share-load-more');
+        if (oldLoader) oldLoader.remove();
+
+        // 顶部计数栏（首次加载时添加）
+        if (isFirst) {
+            body.insertAdjacentHTML('afterbegin',
+                `<div class="share-count-bar" id="shareCountBar">共 ${data.total} 个分享</div>`
+            );
+        }
+
+        if (data.data.length === 0 && isFirst) {
+            body.innerHTML = '<div class="empty-state"><h3>暂无分享</h3><p>右键点击文件可以创建分享链接</p></div>';
+            shareHasMore = false;
+            shareLoading = false;
+            return;
+        }
+
+        // 追加分享条目（强制使用当前页面域名构造URL）
+        body.insertAdjacentHTML('beforeend', data.data.map(s => {
+            // 强制使用当前页面的域名来构造分享链接
+            const currentOrigin = window.location.origin;
+            // 根据 is_direct 判断是直链还是普通分享
+            const isDirect = s.is_direct === 1;
+            const shareUrl = isDirect 
+                ? `${currentOrigin}/api.php?action=download_share&id=${s.id}`
+                : `${currentOrigin}/share.html?id=${s.id}`;
+            return `
+            <div class="share-item ${s.expired ? 'expired' : ''}">
+                <div class="share-info">
+                    <div class="share-name ${s.expired ? 'share-expired' : ''}">
+                        ${s.expired ? '已过期' : (isDirect ? '直链' : '有效期至 ' + (s.expire_at || '永久'))}
+                    </div>
+                    <div class="share-name">${escapeHtml(s.path.split('/').pop())}</div>
+                    <div class="share-url" onclick="copyText('${escapeJs(shareUrl)}')" title="点击复制">${escapeHtml(shareUrl)}</div>
+                    <div class="share-meta">
+                        ${isDirect ? '直链 · 无需登录直接下载' : ('密码：' + (s.password ? escapeHtml(s.password) : '无'))} · 下载 ${s.download_count || 0}${s.max_downloads ? '/' + s.max_downloads : ''} 次 · 创建于 ${s.created_at}
+                    </div>
+                </div>
+                <button class="btn btn-sm" onclick="showQR('${escapeJs(shareUrl)}')">二维码</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteShare('${s.id}')">删除</button>
+                </div>`;
+        }).join(''));
+
+        // 如果还有更多，显示加载提示
+        if (shareHasMore) {
+            body.insertAdjacentHTML('beforeend', '<div class="share-load-more">向下滚动加载更多...</div>');
+        }
+
+    } catch(e) {
+        if (isFirst) body.innerHTML = '<p>加载失败</p>';
+    }
+
+    shareLoading = false;
+}
+
+async function deleteShare(id) {
+    if (!confirm('确定删除此分享？删除后链接将失效。')) return;
+    try {
+        await fetch('api.php?action=delete_share', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ id })
+        });
+        showToast('分享已删除', 'success');
+        shareTotal--;
+        // 更新计数栏
+        const bar = document.getElementById('shareCountBar');
+        if (bar) bar.textContent = `共 ${shareTotal} 个分享`;
+        // 移除对应条目
+        const items = document.querySelectorAll('.share-item');
+        items.forEach(item => {
+            const btn = item.querySelector('button[onclick*="' + id + '"]');
+            if (btn) item.remove();
+        });
+        if (document.querySelectorAll('.share-item').length === 0) {
+            const body = document.getElementById('shareListBody');
+            body.innerHTML = '<div class="empty-state"><h3>暂无分享</h3><p>右键点击文件可以创建分享链接</p></div>';
+            shareHasMore = false;
+        }
+    } catch(e) {
+        showToast('删除失败', 'error');
+    }
+}
+
+// ============ Search ============
+let searchTimeout;
+function handleSearchInput(event) {
+    // Ignore events raised while an IME (pinyin etc.) is still composing;
+    // clearing the value in that phase made typing impossible on Android.
+    if (event.isComposing || event.keyCode === 229) return;
+    clearTimeout(searchTimeout);
+    if (!event.target.value.trim() && isSearchMode) {
+        // Restore the folder listing once when the search text is cleared.
+        isSearchMode = false;
+        searchItems = [];
+        selectedItems.clear();
+        updateBatchButtons();
+        loadFiles(currentPath);
+    }
+}
+
+function handleSearchKey(event) {
+    if (event.isComposing || event.keyCode === 229) return;
+    if (event.key === 'Enter' || event.keyCode === 13) {
+        const keyword = event.target.value.trim();
+        if (keyword) {
+            event.preventDefault();
+            clearTimeout(searchTimeout);
+            doSearch(keyword);
+        }
+    }
+}
+
+async function doSearch(keyword) {
+    const body = document.getElementById('fileBody');
+    body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+    try {
+        const res = await fetch(`api.php?action=search&keyword=${encodeURIComponent(keyword)}&path=${encodeURIComponent(currentPath)}`);
+        const data = await res.json();
+        if (!data.success) { showToast(data.message, 'error'); return; }
+
+        isSearchMode = true;
+        searchItems = data.data.items;
+        fileItems = searchItems; // 同步到 fileItems 以支持选择操作
+        selectedItems.clear();
+
+        document.getElementById('statusInfo').textContent = `搜索 "${keyword}" - 找到 ${data.data.total} 个结果`;
+        document.getElementById('searchInput').value = keyword;
+        renderFileList();
+        updateBatchButtons();
+        updateSelectAll();
+    } catch(e) {
+        showToast('搜索失败', 'error');
+    }
+}
+
+
+
+// ============ Helpers ============
+function openModal(id) {
+    document.getElementById(id).classList.add('show');
+}
+// ============ Skins ============
+const SKINS = [
+    {id:'ocean',   name:'深海蓝', desc:'默认 · 蓝紫微光',   group:'color'},
+    {id:'emerald', name:'翡翠绿', desc:'清透森林绿',       group:'color'},
+    {id:'amber',   name:'琥珀金', desc:'暖调琥珀黄',       group:'color'},
+    {id:'rose',    name:'玫瑰粉', desc:'柔和莓果红',       group:'color'},
+    {id:'violet',  name:'极光紫', desc:'深空紫罗兰',       group:'color'},
+    {id:'square',  name:'方寸',   desc:'直角 + 纯色面板',   group:'ui'},
+    {id:'pill',    name:'胶囊',   desc:'全圆角胶囊按钮',   group:'ui'},
+    {id:'outline', name:'霓虹描边', desc:'透明描边发光按钮', group:'ui'},
+    {id:'flat',    name:'极简平面', desc:'无阴影小圆角',     group:'ui'},
+    {id:'raised',  name:'立体浮雕', desc:'凸起拟物按钮',     group:'ui'},
+    {id:'tech',    name:'科幻切角', desc:'斜切直角按钮',     group:'ui'},
+    {id:'mono',    name:'黑白灰',  desc:'高对比反色按钮',   group:'ui'},
+    {id:'paper',   name:'素白直角', desc:'亮色纯白直角',     group:'ui'},
+    {id:'slate',   name:'石板直角', desc:'冷灰青色直角',     group:'ui'},
+    {id:'lime',    name:'青柠直角', desc:'亮色青柠直角',     group:'ui'},
+    {id:'cloud',   name:'云白',    desc:'浅蓝清爽亮色',     group:'light'},
+    {id:'cream',   name:'奶油',    desc:'暖黄柔和亮色',     group:'light'},
+    {id:'mint',    name:'薄荷',    desc:'浅绿清新亮色',     group:'light'},
+    {id:'frost',   name:'冰晶玻璃', desc:'亮色强毛玻璃',     group:'glass'},
+    {id:'aurora',  name:'极光玻璃', desc:'暗色柔光毛玻璃',   group:'glass'},
+    {id:'smoke',   name:'烟灰玻璃', desc:'中性灰毛玻璃',     group:'glass'},
+    {id:'glass-square', name:'冰晶直角', desc:'亮色毛玻璃 + 直角', group:'glass'}
+];
+
+function getSkin(id) {
+    return SKINS.find(s => s.id === id) || SKINS[0];
+}
+
+async function applySkin(id, persist) {
+    const skin = getSkin(id);
+    document.documentElement.setAttribute('data-theme', skin.id);
+    window.LYWP_THEME = skin.id;
+    document.querySelectorAll('.skin-card').forEach(card => {
+        card.classList.toggle('active', card.dataset.skin === skin.id);
+    });
+    if (persist === false) return;
+    // Drop the old browser-only preference so a stale cached page cannot
+    // override the site-wide skin chosen here.
+    try { localStorage.removeItem('lywp_theme'); } catch (e) {}
+    try {
+        const res = await fetch('api.php?action=theme', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({theme: skin.id})
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || '保存失败');
+        showToast('已保存，全站与分享页同步生效', 'success');
+    } catch (e) {
+        showToast('皮肤仅临时生效，保存失败：' + e.message, 'error');
+    }
+}
+
+function renderSkinCards() {
+    const groups = {
+        color: document.getElementById('skinColorGrid'),
+        ui: document.getElementById('skinUiGrid'),
+        light: document.getElementById('skinLightGrid'),
+        glass: document.getElementById('skinGlassGrid')
+    };
+    Object.keys(groups).forEach(group => {
+        const box = groups[group];
+        if (!box) return;
+        box.innerHTML = SKINS.filter(s => s.group === group).map(s => `
+            <button type="button" class="skin-card" data-skin="${s.id}" data-theme="${s.id}" onclick="applySkin('${s.id}')">
+                <span class="skin-preview"><span class="btn btn-sm">按钮</span><span class="btn btn-sm btn-primary">主要</span></span>
+                <span class="skin-name">${escapeHtml(s.name)}</span>
+                <span class="skin-desc">${escapeHtml(s.desc)}</span>
+            </button>
+        `).join('');
+    });
+}
+
+function openSkinModal() {
+    renderSkinCards();
+    const saved = document.documentElement.getAttribute('data-theme') || 'ocean';
+    applySkin(saved, false);
+    document.getElementById('skinModal').classList.add('show');
+}
+
+function closeModal(id) {
+    if (id === 'offlineModal' && offlineTimer) {
+        clearInterval(offlineTimer);
+        offlineTimer = null;
+    }
+    document.getElementById(id).classList.remove('show');
+}
+function updateStatus() {
+    document.getElementById('statusInfo').textContent = `${fileItems.length} 个项目`;
+}
+
+function formatSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + ' ' + units[i];
+}
+
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '-';
+    const now = new Date();
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const h = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    if (y === now.getFullYear()) return `${m}-${d} ${h}:${min}`;
+    return `${y}-${m}-${d} ${h}:${min}`;
+}
+
+// ============ Download Progress ============
+function showDlProgress(title = '正在下载...') {
+    const el = document.getElementById('dlProgress');
+    document.getElementById('dlTitleText').textContent = title;
+    document.getElementById('dlFill').style.width = '0%';
+    document.getElementById('dlInfo').textContent = '';
+    el.classList.add('show');
+}
+
+function updateDlProgress(loaded, total, extraText = '') {
+    const pct = total > 0 ? Math.round((loaded / total) * 100) : 0;
+    document.getElementById('dlFill').style.width = pct + '%';
+    
+    // 只显示百分比和提示信息，不显示文件大小
+    if (extraText) {
+        document.getElementById('dlInfo').textContent = `${pct}% · ${extraText}`;
+    } else {
+        document.getElementById('dlInfo').textContent = `${pct}%`;
+    }
+}
+
+function hideDlProgress() {
+    document.getElementById('dlProgress').classList.remove('show');
+}
+
+async function fetchWithProgress(url, options, onProgress) {
+    const res = await fetch(url, options);
+    if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || `请求失败 (${res.status})`);
+    }
+    const contentLength = parseInt(res.headers.get('Content-Length') || '0', 10);
+    const reader = res.body.getReader();
+    const chunks = [];
+    let receivedLength = 0;
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        receivedLength += value.length;
+        if (contentLength > 0 && onProgress) onProgress(receivedLength, contentLength);
+    }
+    const blob = new Blob(chunks);
+    return blob;
+}
+
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function escapeJs(str) {
+    if (!str) return '';
+    // 转义反斜杠、单引号、双引号，并转义换行符
+    return str
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r');
+}
+
+function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => showToast('已复制', 'success'))
+        .catch(() => showToast('复制失败', 'error'));
+}
+
+// ============ Offline Download ============
+let offlineTimer = null;
+
+function openOfflineModal() {
+    const torrentInput = document.getElementById('offlineTorrentFile');
+    if (torrentInput) torrentInput.value = '';
+    document.getElementById('offlineTarget').value = currentPath || '网盘根目录';
+    openModal('offlineModal');
+    loadOfflineTasks();
+    if (offlineTimer) clearInterval(offlineTimer);
+    offlineTimer = setInterval(() => {
+        const el = document.getElementById('offlineModal');
+        if (!el || !el.classList.contains('show')) {
+            clearInterval(offlineTimer);
+            offlineTimer = null;
+            return;
+        }
+        loadOfflineTasks();
+    }, 1000);
+}
+
+async function startOfflineDownload() {
+    const url = document.getElementById('offlineUrl').value.trim();
+    if (!url) { showToast('请输入下载链接', 'error'); return; }
+    const btn = document.getElementById('offlineStartBtn');
+    btn.disabled = true;
+    btn.textContent = '提交中...';
+    try {
+        const res = await fetch('api.php?action=offline_add', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                url: url,
+                path: currentPath || '',
+                extract: document.getElementById('offlineExtract').checked
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('offlineUrl').value = '';
+            showToast('离线下载任务已创建', 'success');
+            loadOfflineTasks();
+        } else {
+            showToast(data.message || '创建任务失败', 'error');
+        }
+    } catch (e) {
+        showToast('创建任务失败：' + e.message, 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = '开始下载';
+}
+
+async function startTorrentDownload() {
+    const input = document.getElementById('offlineTorrentFile');
+    const file = input.files && input.files[0];
+    if (!file || !/\.torrent$/i.test(file.name)) {
+        showToast('请选择 .torrent 种子文件', 'error');
+        return;
+    }
+    const btn = document.getElementById('offlineTorrentBtn');
+    btn.disabled = true;
+    btn.textContent = '上传中...';
+    try {
+        const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+            reader.onerror = () => reject(new Error('读取种子文件失败'));
+            reader.readAsDataURL(file);
+        });
+        const res = await fetch('api.php?action=offline_torrent', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name: file.name,
+                path: currentPath || '',
+                data: base64,
+                extract: document.getElementById('offlineExtract').checked
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            input.value = '';
+            showToast('种子下载任务已创建', 'success');
+            loadOfflineTasks();
+        } else {
+            showToast(data.message || '创建任务失败', 'error');
+        }
+    } catch (e) {
+        showToast('创建任务失败：' + e.message, 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = '开始种子下载';
+}
+
+let offlineLoading = false;
+async function loadOfflineTasks() {
+    const box = document.getElementById('offlineTaskList');
+    if (!box || offlineLoading) return;
+    offlineLoading = true;
+    try {
+        const res = await fetch('api.php?action=offline_list');
+        const data = await res.json();
+        if (!data.success || !data.data.items || !data.data.items.length) {
+            box.innerHTML = '<div style="color:var(--text-secondary)">暂无任务</div>';
+            return;
+        }
+        const labels = {pending:'等待中', running:'下载中', done:'已完成', failed:'失败', cancelled:'已取消'};
+        box.innerHTML = data.data.items.map(t => {
+            const status = labels[t.status] || t.status;
+            const cls = t.status === 'done' ? 'var(--success)' : (t.status === 'failed' ? 'var(--danger)' : 'var(--text-secondary)');
+            const progress = t.status === 'done' ? 100 : Math.max(0, Math.min(100, t.progress || 0));
+            return `<div style="padding:10px;border:1px solid var(--border-light);border-radius:8px;margin-bottom:8px">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escapeHtml(t.url)}">${escapeHtml(t.file_name || t.url)}</span>
+                    <span style="color:${cls};font-weight:500">${status}</span>
+                </div>
+                <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">${escapeHtml(t.message || (t.path || '根目录'))}</div>
+                <div style="height:4px;background:var(--border);border-radius:2px;margin-top:6px;overflow:hidden"><div style="height:100%;width:${progress}%;background:var(--primary)"></div></div>
+                <div style="display:flex;gap:6px;margin-top:8px">
+                    ${t.status === 'running' || t.status === 'pending' ? `<button class="btn btn-sm" onclick="offlineTaskAction('cancel','${t.id}')">取消</button>` : ''}
+                    ${t.status === 'failed' || t.status === 'cancelled' ? `<button class="btn btn-sm" onclick="offlineTaskAction('retry','${t.id}')">重试</button>` : ''}
+                    <button class="btn btn-sm" onclick="offlineTaskAction('delete','${t.id}')">删除记录</button>
+                </div>
+            </div>`;
+        }).join('');
+    } catch (e) {
+        box.innerHTML = '<div style="color:var(--danger)">任务列表加载失败</div>';
+    } finally {
+        offlineLoading = false;
+    }
+}
+
+async function offlineTaskAction(action, id) {
+    try {
+        const res = await fetch('api.php?action=offline_' + action, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id: id})
+        });
+        const data = await res.json();
+        if (!data.success) showToast(data.message || '操作失败', 'error');
+        loadOfflineTasks();
+    } catch (e) {
+        showToast('操作失败：' + e.message, 'error');
+    }
+}
+
+// Close modals on overlay click (排除上传弹窗，上传中不允许点击遮罩关闭)
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+        if (e.target === overlay && overlay.id !== 'uploadModal') {
+            overlay.classList.remove('show');
+        }
+    });
+});
+
+// 上传弹窗单独处理：上传中点击背景不关闭
+document.getElementById('uploadModal').addEventListener('click', e => {
+    if (e.target.id === 'uploadModal') {
+        if (uploadAbortController) {
+            // 上传进行中：给个轻提示，不关闭
+            showUploadCloseHint();
+        } else {
+            closeUploadModal();
+        }
+    }
+});
+
+// 上传中点击关闭按钮或背景时给出提示
+function showUploadCloseHint() {
+    const btn = document.getElementById('startUploadBtn');
+    if (!btn) return;
+    const orig = btn.style.outline;
+    btn.style.outline = '2px solid var(--warning)';
+    btn.style.outlineOffset = '2px';
+    // 显示一个小提示
+    let tip = document.getElementById('uploadCloseTip');
+    if (!tip) {
+        tip = document.createElement('div');
+        tip.id = 'uploadCloseTip';
+        tip.style.cssText = 'position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(245,158,11,.95);color:#fff;padding:8px 18px;border-radius:8px;font-size:13px;white-space:nowrap;z-index:9999;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.2)';
+        tip.textContent = '⚠️ 文件正在上传中，请勿关闭';
+        document.getElementById('uploadModal').appendChild(tip);
+    }
+    tip.style.display = 'block';
+    clearTimeout(tip._timer);
+    tip._timer = setTimeout(() => {
+        tip.style.display = 'none';
+        btn.style.outline = orig;
+    }, 2500);
+}
+
+function closeUploadModal() {
+    // 上传进行中：弹确认再关闭
+    if (uploadAbortController) {
+        if (!confirm('文件正在上传中，关闭将中断上传。确定要关闭吗？')) return;
+        uploadAbortController.abort();
+    }
+    // 隐藏提示
+    const tip = document.getElementById('uploadCloseTip');
+    if (tip) tip.style.display = 'none';
+    closeModal('uploadModal');
+}
+
+// Init
+init();
+</script>
+</body>
+</html>
