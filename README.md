@@ -13,17 +13,26 @@
 
 ---
 
-## 多端客户端
+## 服务端与客户端
 
-本仓库同时提供三个配套版本，服务端数据完全互通：
+本仓库同时提供两个服务端版本（Debian / Windows）和一个 Android 客户端，数据格式完全互通：
+
+**服务端**
 
 | 平台 | 目录 | 说明 |
 | --- | --- | --- |
 | 🐧 Debian / Linux | 仓库根目录 | 纯 Go 服务端，`install.sh` 一键安装，支持 amd64 / arm64 |
-| 🪟 Windows 10 / 11（64 位） | [`WindowsClient/`](WindowsClient/) | 纯 Go 移植版，CLI 安装 + 托盘运行（无黑窗口），免管理员权限 |
+| 🪟 Windows 10 / 11（64 位） | [`WindowsServer/`](WindowsServer/) | 纯 Go 服务端，CLI 安装 + 托盘运行（无黑窗口），免管理员权限 |
+
+- **Debian**：下载 Release 中的 `lywp-go-v1.0.0-linux-amd64.tar.gz` / `...-arm64.tar.gz`，解压后 `sudo bash install.sh`。
+- **Windows**：下载 Release 中的 `lywp-windows-server-v1.0.0.zip`，双击 `bin/install.bat` 安装，再双击 `bin/start-tray.bat` 后台运行；详见 [WindowsServer/README.md](WindowsServer/README.md)。
+
+**客户端**
+
+| 平台 | 目录 | 说明 |
+| --- | --- | --- |
 | 🤖 Android 5.0+ | [`AndroidClient/`](AndroidClient/) | 原生 Java + WebView 客户端，自动适配手机/平板，30 天记住登录 |
 
-- **Windows**：下载 `WindowsClient/bin/` 下的程序，双击 `install.bat` 安装，再双击 `start-tray.bat` 后台运行；详见 [WindowsClient/README.md](WindowsClient/README.md)。
 - **Android**：下载 `AndroidClient/apk/lywp-android-release.apk` 安装，填入服务器地址和密码即可；详见 [AndroidClient/README.md](AndroidClient/README.md)。
 
 ---

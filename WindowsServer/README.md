@@ -1,6 +1,8 @@
-# LYWP Windows 客户端
+# LYWP Windows 服务端
 
-纯 Go 实现的轻量网盘 Windows 版，支持 **Windows 10 / 11 64 位**。不需要 PHP、Nginx、MySQL，也不需要管理员权限。前端沿用原版界面与 logo，22 款皮肤由服务端统一保存。
+纯 Go 实现的轻量网盘**服务端** Windows 版，支持 **Windows 10 / 11 64 位**。不需要 PHP、Nginx、MySQL，也不需要管理员权限。前端沿用原版界面与 logo，22 款皮肤由服务端统一保存。
+
+这是完整的网盘服务端，与 Debian 版功能一致，可独立部署在 Windows 机器上对外提供服务；Android 客户端连接本服务端使用。
 
 ## 快速开始（双击即可，不会闪退）
 
