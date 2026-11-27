@@ -484,6 +484,10 @@
             <div class="breadcrumb" id="breadcrumb"></div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
+            <button class="btn btn-sm" onclick="clearCache()" title="清理所有文件夹中上传失败留下的临时文件">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                <span>清缓</span>
+            </button>
             <button class="btn btn-sm" onclick="openUploadModal()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 <span>上传</span>
@@ -3625,6 +3629,25 @@ function formatSize(bytes) {
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return (bytes / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 1) + ' ' + units[i];
+}
+
+// Clear leftover upload temp files (.streaming_*) across all folders.
+async function clearCache() {
+    if (!confirm('确定要清理所有文件夹中上传失败留下的临时文件吗？')) return;
+    try {
+        const res = await fetch('api.php?action=clear_cache');
+        const data = await res.json();
+        if (!data.success) { showToast(data.message || '清理失败', 'error'); return; }
+        const removed = data.data && data.data.removed || 0;
+        const freed = data.data && data.data.freed || 0;
+        if (removed > 0) {
+            showToast(`已清理 ${removed} 个临时文件，释放 ${formatSize(freed)}`, 'success');
+        } else {
+            showToast('没有需要清理的临时文件', 'info');
+        }
+    } catch (e) {
+        showToast('清理失败：' + e.message, 'error');
+    }
 }
 
 function formatDate(dateStr) {
