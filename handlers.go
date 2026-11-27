@@ -199,6 +199,7 @@ func (s *Server) handleAPI(w http.ResponseWriter, r *http.Request, action string
 		"folder/check": true, "folder/unlock": true, "folder/encrypt": true,
 		"offline/list": true, "offline/cancel": true,
 		"offline/delete": true, "offline/retry": true,
+		"clear_cache": true,
 	}
 	if !s.folderGuard(w, r, skip) {
 		return
@@ -208,6 +209,8 @@ func (s *Server) handleAPI(w http.ResponseWriter, r *http.Request, action string
 		s.handleList(w, r)
 	case "upload":
 		s.handleUpload(w, r)
+	case "clear_cache":
+		s.handleClearCache(w, r)
 	case "download":
 		s.handleDownload(w, r)
 	case "zip":
@@ -380,6 +383,29 @@ func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, map[string]any{"success": true, "message": "上传成功"})
+}
+
+// handleClearCache removes temporary files left behind by interrupted uploads
+// (.streaming_*) from every folder under the netdisk root.
+func (s *Server) handleClearCache(w http.ResponseWriter, r *http.Request) {
+	removed := 0
+	var freed int64
+	_ = filepath.WalkDir(s.files, func(p string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return nil
+		}
+		if !strings.HasPrefix(d.Name(), ".streaming_") {
+			return nil
+		}
+		if info, e := d.Info(); e == nil {
+			freed += info.Size()
+		}
+		if e := os.Remove(p); e == nil {
+			removed++
+		}
+		return nil
+	})
+	ok(w, map[string]any{"removed": removed, "freed": freed})
 }
 
 func (s *Server) handleDownload(w http.ResponseWriter, r *http.Request) {
