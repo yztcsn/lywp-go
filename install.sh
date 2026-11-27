@@ -166,7 +166,7 @@ green "[3/5] 注册 systemd 服务（开机自启）..."
 cat > "$UNIT_FILE" <<EOF
 [Unit]
 Description=LYWP Go Netdisk
-Documentation=https://github.com/niiter/lywp-go
+Documentation=https://github.com/yztcsn/lywp-go
 After=network-online.target
 Wants=network-online.target
 

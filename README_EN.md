@@ -3,7 +3,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
 [![Go](https://img.shields.io/badge/Go-1.22%2B-00ADD8.svg)](https://go.dev/)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Debian%2012-orange.svg)](https://www.debian.org/)
-[![Arch](https://img.shields.io/badge/Arch-amd64%20%7C%20arm64-green.svg)](https://github.com/niiter/lywp-go/releases)
+[![Arch](https://img.shields.io/badge/Arch-amd64%20%7C%20arm64-green.svg)](https://github.com/yztcsn/lywp-go/releases)
 
 English · [简体中文](README.md)
 
@@ -205,4 +205,4 @@ sudo bash uninstall.sh --purge -y  # Also wipe the custom storage root and inter
 
 ## License
 
-[GPL-3.0](LICENSE) © niiter
+[GPL-3.0](LICENSE) © yztcsn
