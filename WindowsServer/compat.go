@@ -81,7 +81,7 @@ func (s *Server) handleCompatAPI(w http.ResponseWriter, r *http.Request) {
 		"folder_encrypt": true, "direct_link": true,
 		"offline_list": true, "offline_cancel": true,
 		"offline_delete": true, "offline_retry": true,
-		"offline_torrent": true,
+		"offline_torrent": true, "clear_cache": true,
 	}
 	if !s.folderGuard(w, r, skip) {
 		return
@@ -91,6 +91,8 @@ func (s *Server) handleCompatAPI(w http.ResponseWriter, r *http.Request) {
 		s.handleList(w, r)
 	case "upload_stream":
 		s.handleUpload(w, r)
+	case "clear_cache":
+		s.handleClearCache(w, r)
 	case "download":
 		s.handleDownload(w, r)
 	case "stream":
