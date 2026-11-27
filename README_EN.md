@@ -24,8 +24,8 @@ This repository ships two server editions (Debian / Windows) and one Android cli
 | 🐧 Debian / Linux | Repository root | Pure Go server, one-command `install.sh`, amd64 / arm64 |
 | 🪟 Windows 10 / 11 (64-bit) | [`WindowsServer/`](WindowsServer/) | Pure Go server, CLI install + tray mode (no console window), no admin rights needed |
 
-- **Debian**: download `lywp-go-v1.0.0-linux-amd64.tar.gz` / `...-arm64.tar.gz` from Releases, extract, then `sudo bash install.sh`.
-- **Windows**: download `lywp-windows-server-v1.0.0.zip` from Releases, run `bin/install.bat`, then `bin/start-tray.bat` for background mode; see [WindowsServer/README.md](WindowsServer/README.md).
+- **Debian**: download `lywp-go-v1.1.0-linux-amd64.tar.gz` / `...-arm64.tar.gz` from Releases, extract, then `sudo bash install.sh`.
+- **Windows**: download `lywp-windows-server-v1.1.0.zip` from Releases, run `bin/install.bat`, then `bin/start-tray.bat` for background mode; see [WindowsServer/README.md](WindowsServer/README.md).
 
 **Client**
 
@@ -70,6 +70,7 @@ This repository ships two server editions (Debian / Windows) and one Android cli
 - **Share links**: optional password, expiry, and download limit; QR codes, direct links, share management; per-file download counts on folder shares
 - **Offline downloads**: http / https / FTP / magnet / `.torrent`; server-side streaming or aria2, with optional auto-extract
 - **Folder encryption**: right-click to encrypt; the password is stored as a salted hash and a password is required to enter the folder
+- **One-click cache cleanup**: the "Clear Cache" toolbar button recursively removes leftover temporary files from interrupted uploads across all folders, reporting the count and freed space
 - **22 themes**: switch from the top bar; the choice is saved server-side and applied globally to the login page, netdisk, share pages, and all visitors, persisting across restarts
 - **Large-file optimization**: constant-memory streaming upload with 4 parallel connections; downloads over 256 MiB are handed to the browser's native download manager instead of buffering in memory
 - **No limits**: no file size limit; shares and login sessions are valid indefinitely by default
