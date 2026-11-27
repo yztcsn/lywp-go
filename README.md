@@ -24,8 +24,8 @@
 | 🐧 Debian / Linux | 仓库根目录 | 纯 Go 服务端，`install.sh` 一键安装，支持 amd64 / arm64 |
 | 🪟 Windows 10 / 11（64 位） | [`WindowsServer/`](WindowsServer/) | 纯 Go 服务端，CLI 安装 + 托盘运行（无黑窗口），免管理员权限 |
 
-- **Debian**：下载 Release 中的 `lywp-go-v1.0.0-linux-amd64.tar.gz` / `...-arm64.tar.gz`，解压后 `sudo bash install.sh`。
-- **Windows**：下载 Release 中的 `lywp-windows-server-v1.0.0.zip`，双击 `bin/install.bat` 安装，再双击 `bin/start-tray.bat` 后台运行；详见 [WindowsServer/README.md](WindowsServer/README.md)。
+- **Debian**：下载 Release 中的 `lywp-go-v1.1.0-linux-amd64.tar.gz` / `...-arm64.tar.gz`，解压后 `sudo bash install.sh`。
+- **Windows**：下载 Release 中的 `lywp-windows-server-v1.1.0.zip`，双击 `bin/install.bat` 安装，再双击 `bin/start-tray.bat` 后台运行；详见 [WindowsServer/README.md](WindowsServer/README.md)。
 
 **客户端**
 
@@ -70,6 +70,7 @@
 - **分享链接**：可设访问密码、有效期、下载次数上限；二维码、免登录直链、分享管理；文件夹分享逐文件统计下载次数
 - **离线下载**：http / https / FTP / 磁力 / BT 种子；服务端流式下载或 aria2 处理，支持自动解压
 - **文件夹加密**：右键加密，密码以加盐哈希保存，进入目录需解锁
+- **一键清缓**：工具栏「清缓」按钮，递归清理所有文件夹中上传失败残留的临时文件，并显示清理数量与释放空间
 - **22 款皮肤**：顶栏一键切换，服务端全局保存，登录页 / 网盘 / 分享页 / 所有访客保持一致，重启后仍保留
 - **大文件优化**：流式上传内存恒定，前端 4 路并行；>256 MiB 大文件下载交给浏览器流式落盘，不在内存拼 Blob
 - **无限制**：文件大小无限制，分享与登录会话默认永久有效
