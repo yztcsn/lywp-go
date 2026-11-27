@@ -13,6 +13,30 @@ Ideal for quickly setting up a private file hub on a single Debian 12 machine fo
 
 ---
 
+## Screenshots
+
+| Main UI (file list) | Share management |
+| :---: | :---: |
+| ![Main UI](screenshots/1.png) | ![Share management](screenshots/2.png) |
+
+| Offline downloads (HTTP / magnet / BT) | 22 themes |
+| :---: | :---: |
+| ![Offline downloads](screenshots/3.png) | ![Themes](screenshots/4.png) |
+
+| Context menu (open / download / rename / move / share / encrypt / delete) | Create share (password / expiry / download limit) |
+| :---: | :---: |
+| ![Context menu](screenshots/5.png) | ![Create share](screenshots/6.png) |
+
+| Share link and QR code | Scan QR to download on mobile |
+| :---: | :---: |
+| ![Share link](screenshots/7.png) | ![QR download](screenshots/8.png) |
+
+| Browse shared folders with download counts | Batch download (browser ZIP / server ZIP / async parallel) |
+| :---: | :---: |
+| ![Share page](screenshots/9.png) | ![Batch download](screenshots/10.png) |
+
+---
+
 ## Features
 
 - **Zero-dependency runtime**: one binary + one config file, no PHP / Nginx / MySQL needed
